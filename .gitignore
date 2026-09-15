@@ -1,0 +1,51 @@
+# ------------ .NET -------------
+bin/
+obj/
+out/
+*.user
+*.suo
+*.userprefs
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Derleme ve test çıktıları
+[Dd]ebug/
+[Rr]elease/
+TestResults/
+coverage/
+*.coverage
+*.trx
+
+#EF Core migration bundle (Faz 14'te üretilecek)
+efbundle
+efbundle.exe
+
+# ------------ Secrets -------------
+# Gerçek secret içeren hiçbir dosya repoya girmez
+# Sadece .env.example commitlenir.
+
+.env
+.env.local
+.env.*.local
+appsettings.Development.json
+appsettings.Production.json
+*.pfx
+*.key
+
+# ------------ Node / Next.js (Faz 5'ten itibaren)  -----------
+
+node_modules/
+.next/
+.turbo/
+next-env.d.ts
+*.tsbuildinfo
+
+# ----------- Docker -------------
+docker/data/
+
+# ----------- İşletim Sistemi -------------
+.DS_Store
+Thumbs.db
+desktop.ini
