@@ -24,4 +24,11 @@ public class User : BaseEntity, ITenantEntity, ISoftDeletable
     public DateTimeOffset? DeletedAt { get; set; }
 
     public Company Company { get; set; } = null!;
+
+    public ICollection<UserRole> UserRoles { get; set; } = [];
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
+    public ICollection<UserToken> Tokens { get; set; } = [];
+    public ICollection<ProjectMember> ProjectMemberships { get; set; } = [];
+
+    public ICollection<TaskItem> AssignedTasks { get; set; } = [];
 }
