@@ -6,4 +6,9 @@ public interface IAuthService
         RegisterRequest request,
         string? ipAddress,
         CancellationToken cancellationToken);
+
+    Task<AuthResponse> LoginAsync(
+        LoginRequest request,
+        string? ipAddress,
+        CancellationToken cancellationToken);
 }

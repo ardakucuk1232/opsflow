@@ -18,15 +18,29 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-
+    
     public async Task<ActionResult<AuthResponse>> Register(
         RegisterRequest request,
         CancellationToken cancellationToken)
     {
-        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-
-        var response = await _authService.RegisterAsync(request, ipAddress, cancellationToken);
+        var response = await _authService.RegisterAsync(request, GetClientIpAddress(), cancellationToken);
 
         return StatusCode(StatusCodes.Status201Created, response);
     }
+
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<AuthResponse>> Login(
+        LoginRequest request,
+        CancellationToken cancellationToken)
+    {
+        var response = await _authService.LoginAsync(request, GetClientIpAddress(), cancellationToken);
+
+        return Ok(response);
+    }
+
+    private string? GetClientIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
 }

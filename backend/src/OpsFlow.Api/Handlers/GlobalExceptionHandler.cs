@@ -30,6 +30,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
             NotFoundException e => CreateProblem(StatusCodes.Status404NotFound, "Resource not found.", e.Message),
             ConflictException e => CreateProblem(StatusCodes.Status409Conflict, "Conflict.", e.Message),
+            UnauthorizedException e => CreateProblem(StatusCodes.Status401Unauthorized, "Unauthorized", e.Message),
             ForbiddenException e => CreateProblem(StatusCodes.Status403Forbidden, "Forbidden.", e.Message),
             BusinessRuleException e => CreateProblem(StatusCodes.Status422UnprocessableEntity, "Business rule violation.", e.Message),
 
