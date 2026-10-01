@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using OpsFlow.Application.Common.Interfaces;
 
-namespace OpsFlow.Infrastructure.Indentity;
+namespace OpsFlow.Infrastructure.Identity;
 
 public sealed class SecureTokenService : ISecureTokenService
 {

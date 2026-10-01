@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpsFlow.Domain.Entities;
 using OpsFlow.Infrastructure.Persistence.Seed;
 
-namespace OpsFlow.Infrastructure.Presistence.Configurations;
+namespace OpsFlow.Infrastructure.Persistence.Configurations;
 
 public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permission>
 {

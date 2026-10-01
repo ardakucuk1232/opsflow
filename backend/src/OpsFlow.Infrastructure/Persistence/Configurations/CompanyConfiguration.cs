@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpsFlow.Domain.Entities;
 
-namespace OpsFlow.Infrastructure.Presistence.Configurations;
+namespace OpsFlow.Infrastructure.Persistence.Configurations;
 
 public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
 {
