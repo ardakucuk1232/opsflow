@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpsFlow.Application\OpsFlow.Application.csproj" />
+    <ProjectReference Include="..\..\src\OpsFlow.Infrastructure\OpsFlow.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
