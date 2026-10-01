@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpsFlow.Domain.Entities;
+using OpsFlow.Infrastructure.Persistence.Seed;
 
 namespace OpsFlow.Infrastructure.Presistence.Configurations;
 
@@ -16,5 +17,7 @@ public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permissio
         builder.Property(p => p.Group).HasMaxLength(50);
 
         builder.HasIndex(p => p.Code).IsUnique();
+        
+        builder.HasData(PermissionSeed.All);
     }
 }
