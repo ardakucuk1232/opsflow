@@ -1,7 +1,7 @@
 using OpsFlow.Domain.Common;
 using OpsFlow.Domain.Entities;
 
-namespace OpsFlow.Domain.Entites;
+namespace OpsFlow.Domain.Entities;
 
 public class RefreshToken : BaseEntity, ITenantEntity
 {

@@ -1,5 +1,5 @@
 using OpsFlow.Domain.Common;
-using OpsFlow.Domain.Entites;
+using OpsFlow.Domain.Entities;
 using OpsFlow.Domain.Enums;
 
 namespace OpsFlow.Domain.Entities;

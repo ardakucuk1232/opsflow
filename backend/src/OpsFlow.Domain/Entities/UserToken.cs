@@ -2,7 +2,7 @@ using OpsFlow.Domain.Common;
 using OpsFlow.Domain.Entities;
 using OpsFlow.Domain.Enums;
 
-namespace OpsFlow.Domain.Entites;
+namespace OpsFlow.Domain.Entities;
 
 
 public class UserToken : BaseEntity, ITenantEntity
