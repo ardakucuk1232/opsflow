@@ -82,9 +82,9 @@ public sealed class JwtTokenGeneratorTests
     private static User CreateUser() => new()
     {
         CompanyId = Guid.CreateVersion7(),
-        Email = "ali@abc.com",
-        FirstName = "Ali",
-        LastName = "Yilmaz"
+        Email = "arda@abc.com",
+        FirstName = "Arda",
+        LastName = "Kucuk"
     };
 
     private static TokenValidationParameters CreateValidationParameters(byte[] key) => new()
