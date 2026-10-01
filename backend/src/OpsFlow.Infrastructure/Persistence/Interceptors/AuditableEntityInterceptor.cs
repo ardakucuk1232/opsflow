@@ -48,7 +48,7 @@ public sealed class AuditableEntityInterceptor : SaveChangesInterceptor
                     break;
                 
                 case EntityState.Modified:
-                    entry.Entity.UpdateAt = now;
+                    entry.Entity.UpdatedAt = now;
 
                     entry.Property(e => e.CreatedAt).IsModified = false;
                     break;
