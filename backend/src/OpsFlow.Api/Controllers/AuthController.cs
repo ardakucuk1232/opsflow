@@ -46,6 +46,33 @@ public sealed class AuthController : ControllerBase
         return Ok(response);
     }
 
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<AuthResponse>> Refresh(
+        RefreshTokenRequest request,
+        CancellationToken cancellationToken)
+    {
+        var response = await _authService.RefreshAsync(request, GetClientIpAddress(), cancellationToken);
+
+        return Ok(response);
+    }
+
+    [HttpPost("logout")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Logout(
+        RefreshTokenRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _authService.LogoutAsync(request, GetClientIpAddress(), cancellationToken);
+
+        return NoContent();
+    }
+
     [HttpGet("me")]
     [Authorize]
     [ProducesResponseType(typeof(AuthUserDto), StatusCodes.Status200OK)]

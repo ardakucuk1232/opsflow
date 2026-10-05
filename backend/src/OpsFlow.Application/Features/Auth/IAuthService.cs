@@ -12,6 +12,16 @@ public interface IAuthService
         string? ipAddress,
         CancellationToken cancellationToken);
 
+    Task<AuthResponse> RefreshAsync(
+        RefreshTokenRequest request,
+        string? ipAddress,
+        CancellationToken cancellationToken);
+
+    Task LogoutAsync(
+        RefreshTokenRequest request,
+        string? ipAddress,
+        CancellationToken cancellationToken);
+
     Task<AuthUserDto> GetCurrentUserAsync(
         Guid userId,
         Guid companyId,
