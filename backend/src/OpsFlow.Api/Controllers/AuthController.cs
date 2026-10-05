@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpsFlow.Application.Common.Security;
 using OpsFlow.Application.Features.Auth;
-using OpsFlow.Domain.Exceptions;
 
 namespace OpsFlow.Api.Controllers;
 
@@ -79,25 +77,10 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AuthUserDto>> Me(CancellationToken cancellationToken)
     {
-        var (userId, companyId) = GetAuthenticatedUserIds();
-
-        var user = await _authService.GetCurrentUserAsync(userId, companyId, cancellationToken);
+        var user = await _authService.GetCurrentUserAsync(cancellationToken);
 
         return Ok(user);
     }
 
     private string? GetClientIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
-
-    private (Guid UserId, Guid CompanyId) GetAuthenticatedUserIds()
-    {
-        var userIdValue = User.FindFirst(OpsFlowClaimTypes.UserId)?.Value;
-        var companyIdValue = User.FindFirst(OpsFlowClaimTypes.CompanyId)?.Value;
-
-        if (!Guid.TryParse(userIdValue, out var userId) || !Guid.TryParse(companyIdValue, out var companyId))
-        {
-            throw new UnauthorizedException("The access token is missing required claims.");
-        }
-
-        return (userId, companyId);
-    }
 }

@@ -22,8 +22,5 @@ public interface IAuthService
         string? ipAddress,
         CancellationToken cancellationToken);
 
-    Task<AuthUserDto> GetCurrentUserAsync(
-        Guid userId,
-        Guid companyId,
-        CancellationToken cancellationToken);
+    Task<AuthUserDto> GetCurrentUserAsync(CancellationToken cancellationToken);
 }

@@ -6,6 +6,7 @@ using OpsFlow.Application.Common.Options;
 using OpsFlow.Infrastructure.Identity;
 using OpsFlow.Infrastructure.Persistence;
 using OpsFlow.Infrastructure.Persistence.Interceptors;
+using OpsFlow.Infrastructure.Tenancy;
 
 namespace OpsFlow.Infrastructure;
 
@@ -17,6 +18,9 @@ public static class DependencyInjection
     {
         // Birden fazla bölüm kullandığı için en üstte.
         services.AddSingleton(TimeProvider.System);
+
+        services.AddScoped<TenantContext>();
+        services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
 
         AddPersistence(services, configuration);
         AddIdentityServices(services, configuration);
