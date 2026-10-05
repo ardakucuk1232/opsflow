@@ -42,6 +42,8 @@ public static class DependencyInjection
 
         services.AddSingleton<AuditableEntityInterceptor>();
 
+        services.AddScoped<TenantGuardInterceptor>();
+
         services.AddDbContext<OpsFlowDbContext>((serviceProvider, options) =>
         {
             options.UseNpgsql(connectionString, npgsql =>
@@ -50,7 +52,9 @@ public static class DependencyInjection
                 npgsql.EnableRetryOnFailure(maxRetryCount: 3);
             });
 
-            options.AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
+            options.AddInterceptors(
+                serviceProvider.GetRequiredService<TenantGuardInterceptor>(),
+                serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
         });
 
         services.AddScoped<IOpsFlowDbContext>(sp => sp.GetRequiredService<OpsFlowDbContext>());
