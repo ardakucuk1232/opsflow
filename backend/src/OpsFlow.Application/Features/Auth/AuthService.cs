@@ -30,6 +30,7 @@ public sealed class AuthService : IAuthService
     private readonly JwtOptions _jwtOptions;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AuthService> _logger;
+    private readonly ITenantContext _tenantContext;
 
     public AuthService(
         IOpsFlowDbContext db,
@@ -41,7 +42,8 @@ public sealed class AuthService : IAuthService
         IValidator<RefreshTokenRequest> refreshTokenValidator,
         IOptions<JwtOptions> jwtOptions,
         TimeProvider timeProvider,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        ITenantContext tenantContext)
     {
         _db = db;
         _passwordHasher = passwordHasher;
@@ -53,6 +55,7 @@ public sealed class AuthService : IAuthService
         _jwtOptions = jwtOptions.Value;
         _timeProvider = timeProvider;
         _logger = logger;
+        _tenantContext = tenantContext;
     }
 
     public async Task<AuthResponse> RegisterAsync(
@@ -267,19 +270,16 @@ public sealed class AuthService : IAuthService
                 cancellationToken);
     }
 
-    public async Task<AuthUserDto> GetCurrentUserAsync(
-        Guid userId,
-        Guid companyId,
-        CancellationToken cancellationToken)
+        public async Task<AuthUserDto> GetCurrentUserAsync(CancellationToken cancellationToken)
     {
+        if (_tenantContext.UserId is not Guid userId)
+        {
+            throw new UnauthorizedException("Authentication is required.");
+        }
+        
         var user = await _db.Users
             .AsNoTracking()
-            .Where(u => u.Id == userId
-                && u.CompanyId == companyId
-                && !u.IsDeleted
-                && u.IsActive
-                && u.Company.IsActive
-                && !u.Company.IsDeleted)
+            .Where(u => u.Id == userId && u.IsActive && u.Company.IsActive)
             .Select(u => new AuthUserDto(
                 u.Id,
                 u.CompanyId,

@@ -1,6 +1,7 @@
 using OpsFlow.Api.Extensions;
 using OpsFlow.Api.Handlers;
 using OpsFlow.Api.OpenApi;
+using OpsFlow.Api.Middleware;
 using OpsFlow.Application;
 using OpsFlow.Infrastructure;
 using OpsFlow.Infrastructure.Persistence;
@@ -49,6 +50,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseMiddleware<TenantMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
