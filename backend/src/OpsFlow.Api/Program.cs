@@ -29,6 +29,8 @@ builder.Services.AddJwtAuthentication();
 
 builder.Services.AddApiRateLimiting(builder.Configuration);
 
+builder.Services.AddApiCors(builder.Configuration);
+
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<OpsFlowDbContext>(name: "postgres");
 
@@ -50,6 +52,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseRateLimiter();
 
