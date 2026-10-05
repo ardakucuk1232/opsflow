@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Domain.Entities;
 
-namespace OpsFlow.Infrastructure.Presistence;
+namespace OpsFlow.Infrastructure.Persistence;
 
 public class OpsFlowDbContext : DbContext, IOpsFlowDbContext
 {

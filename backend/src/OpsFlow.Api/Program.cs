@@ -1,36 +1,46 @@
-using Serilog;
+using OpsFlow.Api.Extensions;
+using OpsFlow.Api.Handlers;
+using OpsFlow.Api.OpenApi;
+using OpsFlow.Application;
 using OpsFlow.Infrastructure;
-using OpsFlow.Infrastructure.Presistence;
+using OpsFlow.Infrastructure.Persistence;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Logging - Serilog
 
 builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
     .ReadFrom.Configuration(builder.Configuration)
     .ReadFrom.Services(services)
     .Enrich.FromLogContext());
 
-// Services
-
 builder.Services.AddControllers();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
 
-builder.Services.AddOpenApi();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddJwtAuthentication();
 
-builder.Services.AddHealthChecks().AddDbContextCheck<OpsFlowDbContext>(name: "postgres");
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<OpsFlowDbContext>(name: "postgres");
 
-var app =builder.Build();
+var app = builder.Build();
 
-// Pipeline
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 app.UseSerilogRequestLogging();
 
-if (app.Environment.IsDevelopment()) {
-    app.MapOpenApi();
-
-    app.UseSwaggerUI(options => {
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi().AllowAnonymous();
+    app.UseSwaggerUI(options =>
+    {
         options.SwaggerEndpoint("/openapi/v1.json", "OpsFlow API v1");
         options.DocumentTitle = "OpsFlow API";
     });
@@ -38,10 +48,12 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseHttpsRedirection();
 
-app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapHealthChecks("/health");
+app.MapControllers();
+app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();
 
-public partial class Programm { }
+public partial class Program { }

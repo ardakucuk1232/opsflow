@@ -12,8 +12,8 @@ using OpsFlow.Infrastructure.Persistence;
 namespace OpsFlow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(OpsFlowDbContext))]
-    [Migration("20261001101151_SeedPermissionCatalog")]
-    partial class SeedPermissionCatalog
+    [Migration("20261001143042_RenameUpdatedAtColumn")]
+    partial class RenameUpdatedAtColumn
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -68,7 +68,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("TaskItemId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UploadedByUserId")
@@ -119,7 +119,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                     b.Property<string>("OldValues")
                         .HasColumnType("jsonb");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserAgent")
@@ -174,7 +174,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                     b.Property<int>("SubscriptionPlan")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -225,7 +225,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -258,7 +258,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -442,7 +442,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -479,7 +479,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("CompanyId", "ProjectId", "UserId");
@@ -522,7 +522,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
@@ -561,7 +561,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -621,7 +621,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("TaskItemId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -686,7 +686,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -749,7 +749,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -804,7 +804,7 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("UsedAt")
