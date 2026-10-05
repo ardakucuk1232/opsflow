@@ -270,21 +270,16 @@ public sealed class AuthService : IAuthService
                 cancellationToken);
     }
 
-    public async Task<AuthUserDto> GetCurrentUserAsync(CancellationToken cancellationToken)
+        public async Task<AuthUserDto> GetCurrentUserAsync(CancellationToken cancellationToken)
     {
-        if (_tenantContext.CompanyId is not Guid companyId || _tenantContext.UserId is not Guid userId)
+        if (_tenantContext.UserId is not Guid userId)
         {
-            throw new UnauthorizedException("Authentication is required");
+            throw new UnauthorizedException("Authentication is required.");
         }
-
+        
         var user = await _db.Users
             .AsNoTracking()
-            .Where(u => u.Id == userId
-                && u.CompanyId == companyId
-                && !u.IsDeleted
-                && u.IsActive
-                && u.Company.IsActive
-                && !u.Company.IsDeleted)
+            .Where(u => u.Id == userId && u.IsActive && u.Company.IsActive)
             .Select(u => new AuthUserDto(
                 u.Id,
                 u.CompanyId,
