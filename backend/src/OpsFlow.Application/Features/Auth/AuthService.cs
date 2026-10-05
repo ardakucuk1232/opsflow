@@ -154,6 +154,34 @@ public sealed class AuthService : IAuthService
         return CreateAuthResponse(user, roleNames, refreshToken, refreshTokenEntity);
     }
 
+    public async Task<AuthUserDto> GetCurrentUserAsync(
+        Guid userId,
+        Guid companyId,
+        CancellationToken cancellationToken)
+    {
+        var user = await _db.Users
+            .AsNoTracking()
+            .Where(u => u.Id == userId
+                && u.CompanyId == companyId
+                && !u.IsDeleted
+                && u.IsActive
+                && u.Company.IsActive
+                && !u.Company.IsDeleted)
+            .Select(u => new AuthUserDto(
+                u.Id,
+                u.CompanyId,
+                u.Email,
+                u.FirstName,
+                u.LastName,
+                u.UserRoles
+                    .Select(ur => ur.Role.Name)
+                    .OrderBy(name => name)
+                    .ToList()))
+            .SingleOrDefaultAsync(cancellationToken);
+
+        return user ?? throw new UnauthorizedException("The user associated with this token is no longer available.");
+    }
+
     private static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
 
     private string GetDummyPasswordHash() =>

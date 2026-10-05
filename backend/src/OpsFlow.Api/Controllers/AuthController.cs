@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OpsFlow.Application.Common.Security;
 using OpsFlow.Application.Features.Auth;
+using OpsFlow.Domain.Exceptions;
 
 namespace OpsFlow.Api.Controllers;
 
@@ -15,10 +18,10 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    
     public async Task<ActionResult<AuthResponse>> Register(
         RegisterRequest request,
         CancellationToken cancellationToken)
@@ -29,6 +32,7 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -42,5 +46,31 @@ public sealed class AuthController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuthUserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<AuthUserDto>> Me(CancellationToken cancellationToken)
+    {
+        var (userId, companyId) = GetAuthenticatedUserIds();
+
+        var user = await _authService.GetCurrentUserAsync(userId, companyId, cancellationToken);
+
+        return Ok(user);
+    }
+
     private string? GetClientIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private (Guid UserId, Guid CompanyId) GetAuthenticatedUserIds()
+    {
+        var userIdValue = User.FindFirst(OpsFlowClaimTypes.UserId)?.Value;
+        var companyIdValue = User.FindFirst(OpsFlowClaimTypes.CompanyId)?.Value;
+
+        if (!Guid.TryParse(userIdValue, out var userId) || !Guid.TryParse(companyIdValue, out var companyId))
+        {
+            throw new UnauthorizedException("The access token is missing required claims.");
+        }
+
+        return (userId, companyId);
+    }
 }
