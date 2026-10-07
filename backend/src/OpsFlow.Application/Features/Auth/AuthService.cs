@@ -73,7 +73,9 @@ public sealed class AuthService : IAuthService
 
         if (emailTaken)
         {
-            throw new ConflictException("An account with this email address already exists.");
+            throw new ConflictException(
+                ErrorCodes.Auth.EmailAlreadyInUse,
+                "An account with this email address already exists.");
         }
 
         var now = _timeProvider.GetUtcNow();
@@ -146,13 +148,13 @@ public sealed class AuthService : IAuthService
 
         if (user is null || !passwordIsValid)
         {
-            throw new UnauthorizedException(InvalidCredentialsMessage);
+            throw new UnauthorizedException(ErrorCodes.Auth.InvalidCredentials, InvalidCredentialsMessage);
         }
 
         // Bu noktaya sadece şifreyi bilen biri gelebilir; artık hesabın durumunu söylemek güvenli.
         if (!IsAllowedToSignIn(user))
         {
-            throw new ForbiddenException("This account has been disabled.");
+            throw new ForbiddenException(ErrorCodes.Auth.AccountDisabled, "This account has been disabled.");
         }
 
         var now = _timeProvider.GetUtcNow();
@@ -186,7 +188,7 @@ public sealed class AuthService : IAuthService
 
         if (existingToken is null)
         {
-            throw new UnauthorizedException(InvalidRefreshTokenMessage);
+            throw new UnauthorizedException(ErrorCodes.Auth.InvalidRefreshToken, InvalidRefreshTokenMessage);
         }
 
         // Reuse detection: bu token daha önce kullanılıp yenisiyle değiştirilmiş.
@@ -200,12 +202,12 @@ public sealed class AuthService : IAuthService
                 "Refresh token reuse detected for user {UserId} from {IpAddress}. Revoked {RevokedCount} active session(s).",
                 existingToken.UserId, ipAddress, revokedCount);
 
-            throw new UnauthorizedException(InvalidRefreshTokenMessage);
+            throw new UnauthorizedException(ErrorCodes.Auth.InvalidRefreshToken, InvalidRefreshTokenMessage);
         }
 
         if (existingToken.RevokedAt is not null || existingToken.ExpiresAt <= now)
         {
-            throw new UnauthorizedException(InvalidRefreshTokenMessage);
+            throw new UnauthorizedException(ErrorCodes.Auth.InvalidRefreshToken, InvalidRefreshTokenMessage);
         }
 
         var user = await _db.Users
@@ -217,7 +219,7 @@ public sealed class AuthService : IAuthService
 
         if (user is null || !IsAllowedToSignIn(user))
         {
-            throw new UnauthorizedException(InvalidRefreshTokenMessage);
+            throw new UnauthorizedException(ErrorCodes.Auth.InvalidRefreshToken, InvalidRefreshTokenMessage);
         }
 
         var (newRefreshToken, newRefreshTokenEntity) = CreateRefreshToken(user, ipAddress, now);
@@ -237,7 +239,7 @@ public sealed class AuthService : IAuthService
 
         if (claimedRows == 0)
         {
-            throw new UnauthorizedException(InvalidRefreshTokenMessage);
+            throw new UnauthorizedException(ErrorCodes.Auth.InvalidRefreshToken, InvalidRefreshTokenMessage);
         }
 
         _db.RefreshTokens.Add(newRefreshTokenEntity);

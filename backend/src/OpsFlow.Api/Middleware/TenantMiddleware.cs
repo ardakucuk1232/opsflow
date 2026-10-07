@@ -23,7 +23,7 @@ public sealed class TenantMiddleware
 
             if (!Guid.TryParse(companyIdValue, out var companyId) || !Guid.TryParse(userIdValue, out var userId))
             {
-                throw new UnauthorizedException("The acces token is missing required claims");
+                throw new UnauthorizedException("The access token is missing required claims.");
             }
 
             tenantContext.Set(companyId, userId);

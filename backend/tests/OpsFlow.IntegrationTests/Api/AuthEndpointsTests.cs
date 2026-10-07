@@ -3,7 +3,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using OpsFlow.Application.Features.Auth;
+using OpsFlow.Domain.Exceptions;
 using OpsFlow.IntegrationTests.Fixtures;
+using OpsFlow.IntegrationTests.Support;
 
 namespace OpsFlow.IntegrationTests.Api;
 
@@ -43,7 +45,9 @@ public class AuthEndpointsTests
         var response = await GetMeAsync(accessToken: null);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.ReadProblemAsync();
+        Assert.Equal(ErrorCodes.Unauthorized, problem.Code());
     }
 
     [Fact]
@@ -57,6 +61,9 @@ public class AuthEndpointsTests
             new LoginRequest(registration.Email, "Wrong-password-1"));
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+        var problem = await response.ReadProblemAsync();
+        Assert.Equal(ErrorCodes.Auth.InvalidCredentials, problem.Code());
     }
 
     [Fact]
@@ -68,6 +75,27 @@ public class AuthEndpointsTests
         var response = await _client.PostAsJsonAsync("/api/auth/register", registration);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+
+        var problem = await response.ReadProblemAsync();
+        Assert.Equal(ErrorCodes.Auth.EmailAlreadyInUse, problem.Code());
+    }
+
+    [Fact]
+    public async Task Register_WithInvalidInput_Returns400WithFieldErrors()
+    {
+        var registration = NewRegistration() with { CompanyName = "", Email = "not-an-email", Password = "short" };
+
+        var response = await _client.PostAsJsonAsync("/api/auth/register", registration);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(ErrorCodes.ValidationFailed, problem.Code());
+        Assert.Contains("companyName", problem.Errors.Keys);
+        Assert.Contains("email", problem.Errors.Keys);
+        Assert.Contains("password", problem.Errors.Keys);
     }
 
     [Fact]
@@ -90,10 +118,9 @@ public class AuthEndpointsTests
 
         foreach (var conflict in conflicts)
         {
-            var problem = await conflict.Content.ReadFromJsonAsync<ProblemDetails>();
+            var problem = await conflict.ReadProblemAsync();
 
-            Assert.NotNull(problem);
-            Assert.Equal("An account with this email address already exists.", problem.Detail);
+            Assert.Equal(ErrorCodes.Auth.EmailAlreadyInUse, problem.Code());
         }
     }
 
@@ -111,6 +138,7 @@ public class AuthEndpointsTests
 
         var reuse = await RefreshAsync(auth.RefreshToken);
         Assert.Equal(HttpStatusCode.Unauthorized, reuse.StatusCode);
+        Assert.Equal(ErrorCodes.Auth.InvalidRefreshToken, (await reuse.ReadProblemAsync()).Code());
 
         var afterAlarm = await RefreshAsync(rotated.RefreshToken);
         Assert.Equal(HttpStatusCode.Unauthorized, afterAlarm.StatusCode);

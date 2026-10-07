@@ -28,13 +28,17 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         {
             ValidationException validation => CreateValidationProblem(validation),
 
-            NotFoundException e => CreateProblem(StatusCodes.Status404NotFound, "Resource not found.", e.Message),
-            ConflictException e => CreateProblem(StatusCodes.Status409Conflict, "Conflict.", e.Message),
-            UnauthorizedException e => CreateProblem(StatusCodes.Status401Unauthorized, "Unauthorized", e.Message),
-            ForbiddenException e => CreateProblem(StatusCodes.Status403Forbidden, "Forbidden.", e.Message),
-            BusinessRuleException e => CreateProblem(StatusCodes.Status422UnprocessableEntity, "Business rule violation.", e.Message),
+            NotFoundException e => CreateProblem(StatusCodes.Status404NotFound, "Resource not found.", e),
+            ConflictException e => CreateProblem(StatusCodes.Status409Conflict, "Conflict.", e),
+            UnauthorizedException e => CreateProblem(StatusCodes.Status401Unauthorized, "Unauthorized.", e),
+            ForbiddenException e => CreateProblem(StatusCodes.Status403Forbidden, "Forbidden.", e),
+            BusinessRuleException e => CreateProblem(StatusCodes.Status422UnprocessableEntity, "Business rule violation.", e),
 
-            _ => CreateProblem(StatusCodes.Status500InternalServerError, "An unexpected error occurred.", detail: null)
+            _ => CreateProblem(
+                StatusCodes.Status500InternalServerError,
+                "An unexpected error occurred.",
+                detail: null,
+                ErrorCodes.InternalError)
         };
 
         if (problem.Status >= 500)
@@ -58,11 +62,15 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         });
     }
 
-    private static ProblemDetails CreateProblem(int status, string title, string? detail) => new()
+    private static ProblemDetails CreateProblem(int status, string title, DomainException exception) =>
+        CreateProblem(status, title, exception.Message, exception.Code);
+
+    private static ProblemDetails CreateProblem(int status, string title, string? detail, string code) => new()
     {
         Status = status,
         Title = title,
-        Detail = detail
+        Detail = detail,
+        Extensions = { [ProblemDetailsDefaults.CodeKey] = code }
     };
 
     private static ValidationProblemDetails CreateValidationProblem(ValidationException exception)
@@ -76,7 +84,8 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         return new ValidationProblemDetails(errors)
         {
             Status = StatusCodes.Status400BadRequest,
-            Title = "One or more validation errors occurred."
+            Title = "One or more validation errors occurred.",
+            Extensions = { [ProblemDetailsDefaults.CodeKey] = ErrorCodes.ValidationFailed }
         };
     }
 }

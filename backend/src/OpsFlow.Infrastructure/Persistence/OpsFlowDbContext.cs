@@ -64,9 +64,9 @@ public class OpsFlowDbContext : DbContext, IOpsFlowDbContext
         catch (DbUpdateException exception)
             when (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } postgresException)
         {
-            throw new ConflictException(
-                UniqueViolationMessages.For(postgresException.ConstraintName),
-                exception);
+            var (code, message) = UniqueViolationMessages.For(postgresException.ConstraintName);
+
+            throw new ConflictException(code, message, exception);
         }
     }
 

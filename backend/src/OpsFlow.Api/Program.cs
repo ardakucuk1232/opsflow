@@ -21,7 +21,7 @@ builder.Services.AddOpenApi(options =>
 });
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(ProblemDetailsDefaults.Configure);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
