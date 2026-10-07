@@ -11,10 +11,12 @@ namespace OpsFlow.Api.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IAccountService _accountService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IAccountService accountService)
     {
         _authService = authService;
+        _accountService = accountService;
     }
 
     [HttpPost("register")]
@@ -90,6 +92,66 @@ public sealed class AuthController : ControllerBase
         var user = await _authService.GetCurrentUserAsync(cancellationToken);
 
         return Ok(user);
+    }
+
+    [HttpPost("verify-email")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> VerifyEmail(
+        VerifyEmailRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _accountService.VerifyEmailAsync(request, cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpPost("resend-verification")]
+    [Authorize]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> ResendVerification(CancellationToken cancellationToken)
+    {
+        await _accountService.ResendVerificationEmailAsync(cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> ForgotPassword(
+        ForgotPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _accountService.RequestPasswordResetAsync(request, cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> ResetPassword(
+        ResetPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _accountService.ResetPasswordAsync(request, GetClientIpAddress(), cancellationToken);
+
+        return NoContent();
     }
 
     private string? GetClientIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();

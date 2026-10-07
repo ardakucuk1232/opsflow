@@ -18,5 +18,6 @@ public static class ErrorCodes
         public const string InvalidRefreshToken = "auth.invalid_refresh_token";
         public const string AccountDisabled = "auth.account_disabled";
         public const string EmailAlreadyInUse = "auth.email_already_in_use";
+        public const string InvalidToken = "auth.invalid_token";
     }
 }
