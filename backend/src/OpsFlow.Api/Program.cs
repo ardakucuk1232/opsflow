@@ -36,10 +36,10 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
+
 app.UseExceptionHandler();
 app.UseStatusCodePages();
-
-app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {
