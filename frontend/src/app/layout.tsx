@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "@fontsource-variable/inter";
 import "./globals.css";
+import { AuthProvider } from "@/lib/auth/auth-provider";
 
 export const metadata: Metadata = {
   title: {
@@ -15,7 +16,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="tr" className="h-full antialiased">
       <body className="min-h-full">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
