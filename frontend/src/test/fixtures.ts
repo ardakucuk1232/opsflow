@@ -5,6 +5,7 @@ export const TEST_USER: AuthUser = {
   companyId: "5d0c1c52-7c64-4c4f-8a55-0a3a3c1d9b02",
   companyName: "ABC Yazılım A.Ş.",
   email: "arda@abc.com",
+  isEmailVerified: true,
   firstName: "Arda",
   lastName: "Küçük",
   roles: ["Admin"],

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Options;
+using OpsFlow.Infrastructure.Email;
 using OpsFlow.Infrastructure.Identity;
 using OpsFlow.Infrastructure.Persistence;
 using OpsFlow.Infrastructure.Persistence.Interceptors;
@@ -24,6 +25,7 @@ public static class DependencyInjection
 
         AddPersistence(services, configuration);
         AddIdentityServices(services, configuration);
+        AddEmail(services, configuration);
 
         return services;
     }
@@ -76,5 +78,36 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<ISecureTokenService, SecureTokenService>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+    }
+
+    private static void AddEmail(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<SmtpOptions>()
+            .Bind(configuration.GetSection(SmtpOptions.SectionName))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.Host),
+                "Email:Host is required. Set it in configuration or with the Email__Host environment variable.")
+            .Validate(o => o.Port is > 0 and <= 65535, "Email:Port must be between 1 and 65535.")
+            .Validate(o => SmtpOptions.HasValidFromAddress(o.FromAddress),
+                "Email:FromAddress must be a valid email address.")
+            .Validate(o => o.TimeoutSeconds > 0, "Email:TimeoutSeconds must be positive.")
+            .ValidateOnStart();
+
+        services.AddOptions<FrontendOptions>()
+            .Bind(configuration.GetSection(FrontendOptions.SectionName))
+            .Validate(o => FrontendOptions.HasValidBaseUrl(o.BaseUrl),
+                "Frontend:BaseUrl must be an absolute http or https URL.")
+            .ValidateOnStart();
+
+        services.AddOptions<AccountOptions>()
+            .Bind(configuration.GetSection(AccountOptions.SectionName))
+            .Validate(o => o.EmailVerificationTokenHours > 0, "Account:EmailVerificationTokenHours must be positive.")
+            .Validate(o => o.PasswordResetTokenMinutes > 0, "Account:PasswordResetTokenMinutes must be positive.")
+            .Validate(o => o.EmailCooldownSeconds >= 0, "Account:EmailCooldownSeconds cannot be negative.")
+            .ValidateOnStart();
+
+        services.AddSingleton<EmailQueue>();
+        services.AddSingleton<IEmailQueue>(sp => sp.GetRequiredService<EmailQueue>());
+        services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddHostedService<EmailDispatchService>();
     }
 }

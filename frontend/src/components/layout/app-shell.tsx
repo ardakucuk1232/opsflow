@@ -2,6 +2,7 @@
 
 import { Menu, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
+import { EmailVerificationBanner } from "@/components/account/email-verification-banner";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { UserMenu } from "@/components/layout/user-menu";
 import { Logo } from "@/components/ui/logo";
@@ -84,6 +85,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <UserMenu user={user} onLogout={() => void logout()} />
         </header>
+
+        <EmailVerificationBanner />
 
         <main className="flex-1 px-4 py-8 sm:px-6 lg:px-10">
           <div className="mx-auto w-full max-w-6xl">{children}</div>

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Options;
 using OpsFlow.Application.Common.Text;
+using OpsFlow.Application.Features.Auth.Emails;
 using OpsFlow.Domain.Constants;
 using OpsFlow.Domain.Entities;
 using OpsFlow.Domain.Exceptions;
@@ -31,6 +32,7 @@ public sealed class AuthService : IAuthService
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AuthService> _logger;
     private readonly ITenantContext _tenantContext;
+    private readonly AccountMailer _accountMailer;
 
     public AuthService(
         IOpsFlowDbContext db,
@@ -43,7 +45,8 @@ public sealed class AuthService : IAuthService
         IOptions<JwtOptions> jwtOptions,
         TimeProvider timeProvider,
         ILogger<AuthService> logger,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        AccountMailer accountMailer)
     {
         _db = db;
         _passwordHasher = passwordHasher;
@@ -56,6 +59,7 @@ public sealed class AuthService : IAuthService
         _timeProvider = timeProvider;
         _logger = logger;
         _tenantContext = tenantContext;
+        _accountMailer = accountMailer;
     }
 
     public async Task<AuthResponse> RegisterAsync(
@@ -117,7 +121,11 @@ public sealed class AuthService : IAuthService
         _db.Users.Add(user);
         _db.RefreshTokens.Add(refreshTokenEntity);
 
+        var verificationEmail = _accountMailer.PrepareEmailVerification(user, now);
+
         await _db.SaveChangesAsync(cancellationToken);
+
+        _accountMailer.Send(verificationEmail);
 
         IReadOnlyCollection<string> roleNames = [SystemRoles.Admin];
 
@@ -288,6 +296,7 @@ public sealed class AuthService : IAuthService
                 u.CompanyId,
                 u.Company.Name,
                 u.Email,
+                u.IsEmailVerified,
                 u.FirstName,
                 u.LastName,
                 u.UserRoles
@@ -419,6 +428,7 @@ public sealed class AuthService : IAuthService
         user.CompanyId,
         user.Company.Name,
         user.Email,
+        user.IsEmailVerified,
         user.FirstName,
         user.LastName,
         roles);

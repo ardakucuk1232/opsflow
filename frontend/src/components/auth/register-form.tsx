@@ -11,10 +11,9 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth/auth-provider";
-import { registerSchema, type RegisterFormValues } from "@/lib/auth/schemas";
+import { PASSWORD_HINT, registerSchema, type RegisterFormValues } from "@/lib/auth/schemas";
 import { getErrorMessage } from "@/lib/i18n/error-messages";
 
-const PASSWORD_HINT = "En az 8 karakter, bir harf ve bir rakam içermelidir.";
 const SERVER_FIELD_ERROR = "Bu alanı kontrol edin.";
 
 const SERVER_FIELDS = ["companyName", "firstName", "lastName", "email", "password"] as const;

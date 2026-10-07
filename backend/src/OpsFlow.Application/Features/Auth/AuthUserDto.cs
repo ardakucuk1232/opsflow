@@ -5,6 +5,7 @@ public sealed record AuthUserDto(
     Guid CompanyId,
     string CompanyName,
     string Email,
+    bool IsEmailVerified,
     string FirstName,
     string LastName,
     IReadOnlyCollection<string> Roles);

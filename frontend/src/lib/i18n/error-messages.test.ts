@@ -9,6 +9,12 @@ describe("getErrorMessage", () => {
     expect(getErrorMessage(error)).toBe("E-posta veya şifre hatalı.");
   });
 
+  it("explains an expired or already used email link", () => {
+    const error = new ApiError({ status: 422, code: "auth.invalid_token", message: "x" });
+
+    expect(getErrorMessage(error)).toBe("Bağlantı geçersiz veya süresi dolmuş.");
+  });
+
   it("includes the wait time when the rate limit response provides it", () => {
     const error = new ApiError({
       status: 429,

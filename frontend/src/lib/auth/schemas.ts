@@ -7,6 +7,22 @@ const email = z
   .max(256, "E-posta adresi en fazla 256 karakter olabilir.")
   .pipe(z.email("Geçerli bir e-posta adresi girin."));
 
+const newPassword = z
+  .string()
+  .min(8, "Şifre en az 8 karakter olmalıdır.")
+  .max(128, "Şifre en fazla 128 karakter olabilir.")
+  .regex(/[A-Za-z]/, "Şifre en az bir harf içermelidir.")
+  .regex(/[0-9]/, "Şifre en az bir rakam içermelidir.");
+
+const passwordConfirmation = z.string().min(1, "Şifreyi tekrar girin.");
+
+const PASSWORD_MISMATCH = {
+  path: ["passwordConfirmation"],
+  message: "Şifreler birbiriyle eşleşmiyor.",
+};
+
+export const PASSWORD_HINT = "En az 8 karakter, bir harf ve bir rakam içermelidir.";
+
 export const loginSchema = z.object({
   email,
   password: z
@@ -33,18 +49,21 @@ export const registerSchema = z
       .min(1, "Soyad zorunludur.")
       .max(100, "Soyad en fazla 100 karakter olabilir."),
     email,
-    password: z
-      .string()
-      .min(8, "Şifre en az 8 karakter olmalıdır.")
-      .max(128, "Şifre en fazla 128 karakter olabilir.")
-      .regex(/[A-Za-z]/, "Şifre en az bir harf içermelidir.")
-      .regex(/[0-9]/, "Şifre en az bir rakam içermelidir."),
-    passwordConfirmation: z.string().min(1, "Şifreyi tekrar girin."),
+    password: newPassword,
+    passwordConfirmation,
   })
-  .refine((values) => values.password === values.passwordConfirmation, {
-    path: ["passwordConfirmation"],
-    message: "Şifreler birbiriyle eşleşmiyor.",
-  });
+  .refine((values) => values.password === values.passwordConfirmation, PASSWORD_MISMATCH);
+
+export const forgotPasswordSchema = z.object({ email });
+
+export const resetPasswordSchema = z
+  .object({
+    password: newPassword,
+    passwordConfirmation,
+  })
+  .refine((values) => values.password === values.passwordConfirmation, PASSWORD_MISMATCH);
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type RegisterFormValues = z.infer<typeof registerSchema>;
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;

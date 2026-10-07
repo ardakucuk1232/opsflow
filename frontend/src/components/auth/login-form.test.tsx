@@ -6,9 +6,14 @@ import { LoginForm } from "@/components/auth/login-form";
 import { ApiError } from "@/lib/api/errors";
 
 const login = vi.fn();
+let search = "";
 
 vi.mock("@/lib/auth/auth-provider", () => ({
   useAuth: () => ({ login }),
+}));
+
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(search),
 }));
 
 vi.mock("next/link", () => ({
@@ -19,6 +24,7 @@ vi.mock("next/link", () => ({
 
 beforeEach(() => {
   login.mockReset();
+  search = "";
 });
 
 describe("LoginForm", () => {
@@ -69,6 +75,22 @@ describe("LoginForm", () => {
     await user.click(screen.getByRole("button", { name: "Giriş yap" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("E-posta veya şifre hatalı.");
+  });
+
+  it("confirms a completed password reset", () => {
+    search = "reset=1";
+    render(<LoginForm />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Şifreniz güncellendi.");
+  });
+
+  it("links to the password reset request page", () => {
+    render(<LoginForm />);
+
+    expect(screen.getByRole("link", { name: "Şifremi unuttum" })).toHaveAttribute(
+      "href",
+      "/forgot-password",
+    );
   });
 
   it("toggles password visibility", async () => {
