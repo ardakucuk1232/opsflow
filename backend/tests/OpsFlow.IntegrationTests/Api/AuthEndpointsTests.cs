@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using OpsFlow.Application.Features.Auth;
 using OpsFlow.IntegrationTests.Fixtures;
 
@@ -67,6 +68,33 @@ public class AuthEndpointsTests
         var response = await _client.PostAsJsonAsync("/api/auth/register", registration);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_SameEmailInParallel_CreatesOneAccountAndRejectsTheRestWith409()
+    {
+        var registration = NewRegistration();
+
+        var requests = Enumerable.Range(1, 5).Select(index =>
+            _client.PostAsJsonAsync(
+                "/api/auth/register",
+                registration with { CompanyName = $"{registration.CompanyName} {index}" }));
+
+        var responses = await Task.WhenAll(requests);
+
+        var created = responses.Where(r => r.StatusCode == HttpStatusCode.Created).ToList();
+        var conflicts = responses.Where(r => r.StatusCode == HttpStatusCode.Conflict).ToList();
+
+        Assert.Single(created);
+        Assert.Equal(4, conflicts.Count);
+
+        foreach (var conflict in conflicts)
+        {
+            var problem = await conflict.Content.ReadFromJsonAsync<ProblemDetails>();
+
+            Assert.NotNull(problem);
+            Assert.Equal("An account with this email address already exists.", problem.Detail);
+        }
     }
 
     [Fact]
