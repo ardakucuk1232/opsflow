@@ -17,6 +17,7 @@ type AuthContextValue = SessionState & {
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
   retry: () => Promise<void>;
+  reloadUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -40,9 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const retry = useCallback(() => session.bootstrap(), []);
 
+  const reloadUser = useCallback(() => session.reloadUser(), []);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, login, register, logout, retry }),
-    [state, login, register, logout, retry],
+    () => ({ ...state, login, register, logout, retry, reloadUser }),
+    [state, login, register, logout, retry, reloadUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

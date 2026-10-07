@@ -199,6 +199,24 @@ export const session = {
     return refreshed ? getUsableAccessToken() : null;
   },
 
+  async reloadUser(): Promise<void> {
+    try {
+      const token = await session.getAccessToken();
+
+      if (!token) {
+        return;
+      }
+
+      const user = await send<AuthUser>("/api/auth/me", { token });
+
+      if (state.status === "authenticated") {
+        setState({ status: "authenticated", user });
+      }
+    } catch {
+      return;
+    }
+  },
+
   signIn(response: AuthResponse): void {
     applyAuthResponse(response);
   },

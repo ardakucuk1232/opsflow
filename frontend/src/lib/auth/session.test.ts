@@ -109,6 +109,32 @@ describe("session.getAccessToken", () => {
   });
 });
 
+describe("session.reloadUser", () => {
+  it("replaces the signed-in user with the latest profile from the API", async () => {
+    session.signIn(createAuthResponse({ user: { ...TEST_USER, isEmailVerified: false } }));
+    fetchMock.mockResolvedValueOnce(jsonResponse({ ...TEST_USER, isEmailVerified: true }));
+
+    await session.reloadUser();
+
+    expect(session.getState().user?.isEmailVerified).toBe(true);
+    expect(String(fetchMock.mock.calls[0][0])).toContain("/api/auth/me");
+  });
+
+  it("keeps the current user when the request fails", async () => {
+    session.signIn(createAuthResponse());
+    fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+
+    await expect(session.reloadUser()).resolves.toBeUndefined();
+    expect(session.getState()).toEqual({ status: "authenticated", user: TEST_USER });
+  });
+
+  it("does nothing without a session", async () => {
+    await session.reloadUser();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
 describe("session.signOut", () => {
   it("clears local state immediately and revokes the refresh token on the API", async () => {
     session.signIn(createAuthResponse({ refreshToken: "refresh-1" }));

@@ -3,6 +3,7 @@ export type AuthUser = {
   companyId: string;
   companyName: string;
   email: string;
+  isEmailVerified: boolean;
   firstName: string;
   lastName: string;
   roles: string[];
