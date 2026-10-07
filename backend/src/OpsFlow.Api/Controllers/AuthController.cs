@@ -52,7 +52,7 @@ public sealed class AuthController : ControllerBase
 
     [HttpPost("refresh")]
     [AllowAnonymous]
-    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [EnableRateLimiting(RateLimitPolicies.Session)]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -68,7 +68,7 @@ public sealed class AuthController : ControllerBase
 
     [HttpPost("logout")]
     [AllowAnonymous]
-    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [EnableRateLimiting(RateLimitPolicies.Session)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]

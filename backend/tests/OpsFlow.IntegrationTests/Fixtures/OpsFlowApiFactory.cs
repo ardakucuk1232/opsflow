@@ -16,6 +16,8 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected virtual int AuthPermitLimit => 10_000;
 
+    protected virtual int SessionPermitLimit => 10_000;
+
     public Task InitializeAsync() => _postgres.InitializeAsync();
 
     async Task IAsyncLifetime.DisposeAsync()
@@ -41,7 +43,9 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["Jwt:SigningKey"] = _signingKey,
                 ["Cors:AllowedOrigins:0"] = AllowedOrigin,
                 ["RateLimiting:AuthPermitLimit"] = AuthPermitLimit.ToString(CultureInfo.InvariantCulture),
-                ["RateLimiting:AuthWindowSeconds"] = "60"
+                ["RateLimiting:AuthWindowSeconds"] = "60",
+                ["RateLimiting:SessionPermitLimit"] = SessionPermitLimit.ToString(CultureInfo.InvariantCulture),
+                ["RateLimiting:SessionWindowSeconds"] = "60"
             }));
 
         return base.CreateHost(builder);
