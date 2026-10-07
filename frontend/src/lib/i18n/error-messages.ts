@@ -16,6 +16,7 @@ const MESSAGES_BY_CODE: Record<string, string> = {
   "auth.invalid_refresh_token": "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.",
   "auth.account_disabled": "Bu hesap devre dışı bırakılmış. Şirket yöneticinizle iletişime geçin.",
   "auth.email_already_in_use": "Bu e-posta adresiyle kayıtlı bir hesap zaten var.",
+  "auth.invalid_token": "Bağlantı geçersiz veya süresi dolmuş.",
 };
 
 function tooManyRequestsMessage(retryAfterSeconds: number | null): string {

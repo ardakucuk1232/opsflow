@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Alert } from "@/components/ui/alert";
@@ -15,7 +16,10 @@ import { getErrorMessage } from "@/lib/i18n/error-messages";
 
 export function LoginForm() {
   const { login } = useAuth();
+  const searchParams = useSearchParams();
   const [formError, setFormError] = useState<string | null>(null);
+
+  const passwordWasReset = searchParams.get("reset") === "1";
 
   const {
     register,
@@ -42,7 +46,11 @@ export function LoginForm() {
       <p className="mt-2 text-sm text-muted">Hesabınıza erişmek için bilgilerinizi girin.</p>
 
       <form onSubmit={onSubmit} noValidate className="mt-8 flex flex-col gap-5">
-        {formError ? <Alert>{formError}</Alert> : null}
+        {formError ? (
+          <Alert>{formError}</Alert>
+        ) : passwordWasReset ? (
+          <Alert tone="success">Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.</Alert>
+        ) : null}
 
         <FormField id="email" label="E-posta" error={errors.email?.message}>
           <Input
@@ -65,6 +73,12 @@ export function LoginForm() {
             {...register("password")}
           />
         </FormField>
+
+        <div className="-mt-2 text-right text-sm">
+          <Link href="/forgot-password" className="font-medium text-primary hover:text-primary-hover">
+            Şifremi unuttum
+          </Link>
+        </div>
 
         <Button type="submit" size="lg" fullWidth loading={isSubmitting}>
           Giriş yap
