@@ -95,6 +95,7 @@ public sealed class AuthService : IAuthService
         var user = new User
         {
             CompanyId = company.Id,
+            Company = company,
             Email = email,
             PasswordHash = _passwordHasher.Hash(request.Password),
             FirstName = request.FirstName.Trim(),
@@ -285,6 +286,7 @@ public sealed class AuthService : IAuthService
             .Select(u => new AuthUserDto(
                 u.Id,
                 u.CompanyId,
+                u.Company.Name,
                 u.Email,
                 u.FirstName,
                 u.LastName,
@@ -415,6 +417,7 @@ public sealed class AuthService : IAuthService
     private static AuthUserDto ToDto(User user, IReadOnlyCollection<string> roles) => new(
         user.Id,
         user.CompanyId,
+        user.Company.Name,
         user.Email,
         user.FirstName,
         user.LastName,

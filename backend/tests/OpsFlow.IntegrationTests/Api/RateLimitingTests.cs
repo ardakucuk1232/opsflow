@@ -17,11 +17,11 @@ public class RateLimitingTests : IClassFixture<RateLimitedApiFactory>
     }
 
     [Fact]
-    public async Task AuthEndpoints_Return429_OnceTheLimitIsExceeded()
+    public async Task Login_Returns429_OnceTheAuthLimitIsExceeded()
     {
         var wrongCredentials = new LoginRequest("nobody@test.local", "Wrong-password-1");
 
-        for (var attempt = 1; attempt <= RateLimitedApiFactory.Limit; attempt++)
+        for (var attempt = 1; attempt <= RateLimitedApiFactory.AuthLimit; attempt++)
         {
             var allowed = await _client.PostAsJsonAsync("/api/auth/login", wrongCredentials);
 
@@ -34,14 +34,35 @@ public class RateLimitingTests : IClassFixture<RateLimitedApiFactory>
         Assert.NotNull(rejected.Headers.RetryAfter);
         Assert.Equal(ErrorCodes.TooManyRequests, (await rejected.ReadProblemAsync()).Code());
 
-        var refresh = await _client.PostAsJsonAsync(
-            "/api/auth/refresh",
-            new RefreshTokenRequest("any-token"));
+        var register = await _client.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegisterRequest("Company", "Test", "User", "limited@test.local", "Test-password-1"));
 
-        Assert.Equal(HttpStatusCode.TooManyRequests, refresh.StatusCode);
+        Assert.Equal(HttpStatusCode.TooManyRequests, register.StatusCode);
 
         var status = await _client.GetAsync("/api/status");
 
         Assert.Equal(HttpStatusCode.OK, status.StatusCode);
+    }
+
+    [Fact]
+    public async Task Refresh_HasItsOwnLimit_SeparateFromLogin()
+    {
+        var unknownToken = new RefreshTokenRequest("unknown-token");
+
+        for (var attempt = 1; attempt <= RateLimitedApiFactory.SessionLimit; attempt++)
+        {
+            var allowed = await _client.PostAsJsonAsync("/api/auth/refresh", unknownToken);
+
+            Assert.Equal(HttpStatusCode.Unauthorized, allowed.StatusCode);
+        }
+
+        var rejected = await _client.PostAsJsonAsync("/api/auth/refresh", unknownToken);
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, rejected.StatusCode);
+
+        var logout = await _client.PostAsJsonAsync("/api/auth/logout", unknownToken);
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, logout.StatusCode);
     }
 }

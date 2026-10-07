@@ -35,6 +35,8 @@ public class AuthEndpointsTests
 
         Assert.NotNull(me);
         Assert.Equal(registration.Email, me.Email);
+        Assert.Equal(registration.CompanyName, me.CompanyName);
+        Assert.Equal(registration.CompanyName, auth.User.CompanyName);
         Assert.Equal(auth.User.CompanyId, me.CompanyId);
         Assert.Contains("Admin", me.Roles);
     }
