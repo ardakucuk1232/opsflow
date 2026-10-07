@@ -1,9 +1,11 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Persistence;
 using OpsFlow.Domain.Common;
 using OpsFlow.Domain.Entities;
+using OpsFlow.Domain.Exceptions;
 
 namespace OpsFlow.Infrastructure.Persistence;
 
@@ -49,6 +51,23 @@ public class OpsFlowDbContext : DbContext, IOpsFlowDbContext
         ApplyGlobalFilters(modelBuilder);
 
         base.OnModelCreating(modelBuilder);
+    }
+
+    public override async Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+        catch (DbUpdateException exception)
+            when (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } postgresException)
+        {
+            var (code, message) = UniqueViolationMessages.For(postgresException.ConstraintName);
+
+            throw new ConflictException(code, message, exception);
+        }
     }
 
     private void ApplyGlobalFilters(ModelBuilder modelBuilder)

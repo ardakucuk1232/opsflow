@@ -2,12 +2,16 @@ namespace OpsFlow.Domain.Exceptions;
 
 public abstract class DomainException : Exception
 {
-    protected DomainException(string message) : base(message)
+    protected DomainException(string code, string message) : base(message)
     {
+        Code = code;
     }
 
-    protected DomainException(string message, Exception innerException)
+    protected DomainException(string code, string message, Exception innerException)
         : base(message, innerException)
     {
+        Code = code;
     }
+
+    public string Code { get; }
 }

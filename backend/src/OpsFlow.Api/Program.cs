@@ -21,11 +21,15 @@ builder.Services.AddOpenApi(options =>
 });
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(ProblemDetailsDefaults.Configure);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddJwtAuthentication();
+
+builder.Services.AddApiRateLimiting(builder.Configuration);
+
+builder.Services.AddApiCors(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<OpsFlowDbContext>(name: "postgres");
@@ -48,6 +52,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors();
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();
