@@ -9,6 +9,7 @@ namespace OpsFlow.IntegrationTests.Fixtures;
 public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string AllowedOrigin = "http://localhost:3000";
+    public const string FrontendBaseUrl = "http://localhost:3000";
 
     private readonly PostgresFixture _postgres = new();
 
@@ -45,7 +46,12 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["RateLimiting:AuthPermitLimit"] = AuthPermitLimit.ToString(CultureInfo.InvariantCulture),
                 ["RateLimiting:AuthWindowSeconds"] = "60",
                 ["RateLimiting:SessionPermitLimit"] = SessionPermitLimit.ToString(CultureInfo.InvariantCulture),
-                ["RateLimiting:SessionWindowSeconds"] = "60"
+                ["RateLimiting:SessionWindowSeconds"] = "60",
+                ["Email:Host"] = "localhost",
+                ["Email:Port"] = "2525",
+                ["Email:Security"] = "None",
+                ["Email:FromAddress"] = "no-reply@opsflow.test",
+                ["Frontend:BaseUrl"] = FrontendBaseUrl
             }));
 
         return base.CreateHost(builder);
