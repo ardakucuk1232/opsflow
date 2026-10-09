@@ -117,7 +117,7 @@ public sealed class TeamScenario
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<T>();
+        var body = await response.Content.ReadFromJsonAsync<T>(JsonDefaults.Options);
         Assert.NotNull(body);
 
         return body;

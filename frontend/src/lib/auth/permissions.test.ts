@@ -23,6 +23,7 @@ describe("getVisibleNavigation", () => {
   it("shows every page to an admin", () => {
     expect(getVisibleNavigation(TEST_USER.permissions).map((item) => item.href)).toEqual([
       "/dashboard",
+      "/projects",
       "/team",
       "/roles",
     ]);
@@ -31,8 +32,9 @@ describe("getVisibleNavigation", () => {
   it("hides pages the user has no permission for", () => {
     expect(getVisibleNavigation(employee.permissions).map((item) => item.href)).toEqual([
       "/dashboard",
+      "/projects",
       "/team",
     ]);
-    expect(getVisibleNavigation([]).map((item) => item.href)).toEqual(["/dashboard"]);
+    expect(getVisibleNavigation([]).map((item) => item.href)).toEqual(["/dashboard", "/projects"]);
   });
 });

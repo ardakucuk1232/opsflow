@@ -5,6 +5,7 @@ using OpsFlow.Application.Common.Security;
 using OpsFlow.Application.Features.Auth;
 using OpsFlow.Application.Features.Auth.Emails;
 using OpsFlow.Application.Features.Auth.Tokens;
+using OpsFlow.Application.Features.Projects;
 using OpsFlow.Application.Features.Roles;
 using OpsFlow.Application.Features.Users;
 
@@ -29,6 +30,8 @@ public static class DependencyInjection
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<ProjectAccess>();
+        services.AddScoped<IProjectService, ProjectService>();
 
         return services;
     }

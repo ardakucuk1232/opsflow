@@ -27,6 +27,10 @@ const MESSAGES_BY_CODE: Record<string, string> = {
   "roles.in_use": "Bu rol kullanıcılara atanmış. Silmeden önce bu kullanıcıların rolünü değiştirin.",
   "roles.name_taken": "Bu isimde bir rol zaten var.",
   "roles.invalid_permissions": "Seçilen izinlerden biri geçerli değil.",
+  "projects.key_taken": "Bu kısa adı kullanan bir proje zaten var.",
+  "projects.member_exists": "Bu kullanıcı zaten projenin üyesi.",
+  "projects.invalid_member": "Bu kullanıcı projeye eklenemez. Hesabı pasif ya da silinmiş olabilir.",
+  "projects.last_lead": "Projede en az bir aktif proje lideri kalmalıdır.",
 };
 
 function tooManyRequestsMessage(retryAfterSeconds: number | null): string {
