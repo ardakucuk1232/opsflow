@@ -280,6 +280,14 @@ public sealed class ProjectService : IProjectService
         _db.ProjectMembers.Remove(member);
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _db.TaskItems
+            .Where(t => t.ProjectId == id && t.AssigneeId == userId)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(t => t.AssigneeId, (Guid?)null)
+                    .SetProperty(t => t.UpdatedAt, (DateTimeOffset?)_timeProvider.GetUtcNow()),
+                cancellationToken);
     }
 
     private async Task<ProjectMember> LoadMemberAsync(Guid projectId, Guid userId, CancellationToken cancellationToken)

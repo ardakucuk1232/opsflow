@@ -60,6 +60,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IOpsFlowDbContext>(sp => sp.GetRequiredService<OpsFlowDbContext>());
+        services.AddScoped<ITaskNumberGenerator, TaskNumberGenerator>();
     }
 
     private static void AddIdentityServices(IServiceCollection services, IConfiguration configuration)

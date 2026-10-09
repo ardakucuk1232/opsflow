@@ -39,6 +39,11 @@ public static class ErrorCodes
         public const string LastLead = "projects.last_lead";
     }
 
+    public static class Tasks
+    {
+        public const string AssigneeNotMember = "tasks.assignee_not_member";
+    }
+
     public static class Roles
     {
         public const string SystemRoleLocked = "roles.system_role_locked";

@@ -119,6 +119,63 @@ export type ProjectDetail = {
   updatedAt: string | null;
 };
 
+export type TaskStatus = "Backlog" | "Todo" | "InProgress" | "InReview" | "Done" | "Cancelled";
+
+export type TaskPriority = "Low" | "Medium" | "High" | "Critical";
+
+export type TaskSummary = {
+  id: string;
+  projectId: string;
+  key: string;
+  number: number;
+  title: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assignee: UserReference | null;
+  dueDate: string | null;
+  boardOrder: number;
+  commentCount: number;
+  createdAt: string;
+};
+
+export type TaskDetail = {
+  id: string;
+  projectId: string;
+  projectKey: string;
+  projectName: string;
+  key: string;
+  number: number;
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assignee: UserReference | null;
+  reporter: UserReference;
+  dueDate: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+};
+
+export type AssignedTask = {
+  id: string;
+  projectId: string;
+  projectName: string;
+  key: string;
+  title: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate: string | null;
+};
+
+export type TaskComment = {
+  id: string;
+  author: UserReference;
+  body: string;
+  createdAt: string;
+  canDelete: boolean;
+};
+
 export type PagedResult<T> = {
   items: T[];
   page: number;

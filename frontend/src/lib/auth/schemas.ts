@@ -132,6 +132,19 @@ export const createProjectSchema = z
   })
   .refine(datesInOrder, DATE_ORDER);
 
+export const taskSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Başlık zorunludur.")
+    .max(300, "Başlık en fazla 300 karakter olabilir."),
+  description: z.string().trim().max(10000, "Açıklama en fazla 10000 karakter olabilir."),
+  status: z.enum(["Backlog", "Todo", "InProgress", "InReview", "Done", "Cancelled"]),
+  priority: z.enum(["Low", "Medium", "High", "Critical"]),
+  assigneeId: z.string(),
+  dueDate: optionalDate,
+});
+
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
@@ -141,3 +154,4 @@ export type UserRolesFormValues = z.infer<typeof userRolesSchema>;
 export type RoleFormValues = z.infer<typeof roleSchema>;
 export type AcceptInvitationFormValues = z.infer<typeof acceptInvitationSchema>;
 export type CreateProjectFormValues = z.infer<typeof createProjectSchema>;
+export type TaskFormValues = z.infer<typeof taskSchema>;

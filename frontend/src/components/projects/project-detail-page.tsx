@@ -2,12 +2,14 @@
 
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { ProjectFormDialog } from "@/components/projects/project-form-dialog";
 import { ProjectKeyBadge } from "@/components/projects/project-key-badge";
 import { ProjectMembers } from "@/components/projects/project-members";
 import { ProjectStatusBadge } from "@/components/projects/project-status-badge";
+import { TaskBoard } from "@/components/tasks/task-board";
+import { TaskDialog } from "@/components/tasks/task-dialog";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -18,7 +20,15 @@ import { useAuth } from "@/lib/auth/auth-provider";
 import { hasPermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { useApiData } from "@/lib/hooks/use-api-data";
 import { getErrorMessage } from "@/lib/i18n/error-messages";
+import { cn } from "@/lib/utils/cn";
 import { formatDate, formatDateOnly } from "@/lib/utils/format";
+
+type Tab = "board" | "overview";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "board", label: "Pano" },
+  { id: "overview", label: "Genel bakış" },
+];
 
 function BackLink() {
   return (
@@ -34,10 +44,21 @@ function BackLink() {
 
 export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const canDelete = hasPermission(user, PERMISSIONS.projectManage);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [tab, setTab] = useState<Tab>("board");
+  const [boardVersion, setBoardVersion] = useState(0);
+
+  const openTaskId = searchParams.get("task");
+  const projectPath = `/projects/${encodeURIComponent(projectId)}`;
+
+  const openTask = (taskId: string) =>
+    router.replace(`${projectPath}?task=${encodeURIComponent(taskId)}`, { scroll: false });
+  const closeTask = () => router.replace(projectPath, { scroll: false });
+  const refreshBoard = () => setBoardVersion((current) => current + 1);
 
   const loadProject = useCallback((signal: AbortSignal) => projectsApi.get(projectId, signal), [projectId]);
   const project = useApiData(loadProject);
@@ -114,7 +135,39 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div role="tablist" aria-label="Proje bölümleri" className="flex gap-1 border-b border-border">
+        {TABS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            id={`tab-${item.id}`}
+            aria-selected={tab === item.id}
+            aria-controls={`panel-${item.id}`}
+            onClick={() => setTab(item.id)}
+            className={cn(
+              "-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-ring",
+              tab === item.id
+                ? "border-primary text-primary"
+                : "border-transparent text-muted hover:text-foreground",
+            )}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "board" ? (
+        <div role="tabpanel" id="panel-board" aria-labelledby="tab-board">
+          <TaskBoard project={data} refreshKey={boardVersion} onOpenTask={openTask} onChanged={refreshBoard} />
+        </div>
+      ) : (
+      <div
+        role="tabpanel"
+        id="panel-overview"
+        aria-labelledby="tab-overview"
+        className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+      >
         <div className="flex flex-col gap-6">
           <section aria-labelledby="description-heading" className="rounded-xl border border-border bg-surface p-5 shadow-xs">
             <h2 id="description-heading" className="text-base font-medium text-foreground">
@@ -137,6 +190,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           ))}
         </dl>
       </div>
+      )}
+
+      <TaskDialog taskId={openTaskId} project={data} onClose={closeTask} onChanged={refreshBoard} />
 
       <ProjectFormDialog
         open={editing}
