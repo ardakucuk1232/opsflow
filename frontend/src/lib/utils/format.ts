@@ -19,3 +19,9 @@ export function formatDate(value: string): string {
 export function formatDateTime(value: string): string {
   return dateTimeFormatter.format(new Date(value));
 }
+
+export function formatDateOnly(value: string): string {
+  const [year, month, day] = value.split("-").map(Number);
+
+  return dateFormatter.format(new Date(year, month - 1, day));
+}

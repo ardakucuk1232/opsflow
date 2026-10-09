@@ -99,6 +99,39 @@ export const acceptInvitationSchema = z
   })
   .refine((values) => values.password === values.passwordConfirmation, PASSWORD_MISMATCH);
 
+const optionalDate = z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "Geçerli bir tarih girin.");
+
+const projectFields = {
+  name: z
+    .string()
+    .trim()
+    .min(1, "Proje adı zorunludur.")
+    .max(200, "Proje adı en fazla 200 karakter olabilir."),
+  description: z.string().trim().max(4000, "Açıklama en fazla 4000 karakter olabilir."),
+  status: z.enum(["Planning", "Active", "OnHold", "Completed", "Cancelled"]),
+  startDate: optionalDate,
+  endDate: optionalDate,
+};
+
+const DATE_ORDER = {
+  path: ["endDate"],
+  message: "Bitiş tarihi başlangıç tarihinden önce olamaz.",
+};
+
+function datesInOrder(values: { startDate: string; endDate: string }): boolean {
+  return values.startDate === "" || values.endDate === "" || values.endDate >= values.startDate;
+}
+
+export const createProjectSchema = z
+  .object({
+    ...projectFields,
+    key: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z][A-Za-z0-9]{1,9}$/, "Kısa ad 2-10 harf veya rakamdan oluşmalı ve harfle başlamalıdır."),
+  })
+  .refine(datesInOrder, DATE_ORDER);
+
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
@@ -107,3 +140,4 @@ export type InviteUserFormValues = z.infer<typeof inviteUserSchema>;
 export type UserRolesFormValues = z.infer<typeof userRolesSchema>;
 export type RoleFormValues = z.infer<typeof roleSchema>;
 export type AcceptInvitationFormValues = z.infer<typeof acceptInvitationSchema>;
+export type CreateProjectFormValues = z.infer<typeof createProjectSchema>;

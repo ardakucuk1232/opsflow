@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShieldCheck, Users, type LucideIcon } from "lucide-react";
+import { FolderKanban, LayoutDashboard, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 
 export type NavigationItem = {
@@ -10,6 +10,7 @@ export type NavigationItem = {
 
 export const NAVIGATION: NavigationItem[] = [
   { href: "/dashboard", label: "Panel", icon: LayoutDashboard },
+  { href: "/projects", label: "Projeler", icon: FolderKanban },
   { href: "/team", label: "Ekip", icon: Users, permission: PERMISSIONS.userView },
   { href: "/roles", label: "Roller", icon: ShieldCheck, permission: PERMISSIONS.roleManage },
 ];

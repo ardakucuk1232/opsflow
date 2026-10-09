@@ -68,6 +68,57 @@ export type InvitationPreview = {
   companyName: string;
 };
 
+export type ProjectStatus = "Planning" | "Active" | "OnHold" | "Completed" | "Cancelled";
+
+export type ProjectMemberRole = "Member" | "Lead";
+
+export type UserReference = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+};
+
+export type ProjectSummary = {
+  id: string;
+  key: string;
+  name: string;
+  status: ProjectStatus;
+  startDate: string | null;
+  endDate: string | null;
+  memberCount: number;
+  lead: UserReference | null;
+  currentUserRole: ProjectMemberRole | null;
+  canManage: boolean;
+  createdAt: string;
+};
+
+export type ProjectMember = {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  isActive: boolean;
+  role: ProjectMemberRole;
+  joinedAt: string;
+};
+
+export type ProjectDetail = {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  status: ProjectStatus;
+  startDate: string | null;
+  endDate: string | null;
+  createdBy: UserReference;
+  members: ProjectMember[];
+  currentUserRole: ProjectMemberRole | null;
+  canManage: boolean;
+  createdAt: string;
+  updatedAt: string | null;
+};
+
 export type PagedResult<T> = {
   items: T[];
   page: number;
