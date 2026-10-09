@@ -128,8 +128,9 @@ public sealed class AuthService : IAuthService
         _accountMailer.Send(verificationEmail);
 
         IReadOnlyCollection<string> roleNames = [SystemRoles.Admin];
+        var permissionCodes = SystemRolePermissions.Map[SystemRoles.Admin].Order(StringComparer.Ordinal).ToArray();
 
-        return CreateAuthResponse(user, roleNames, refreshToken, refreshTokenEntity);
+        return CreateAuthResponse(user, roleNames, permissionCodes, refreshToken, refreshTokenEntity);
     }
 
     public async Task<AuthResponse> LoginAsync(
@@ -149,6 +150,8 @@ public sealed class AuthService : IAuthService
             .Include(u => u.Company)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
             .SingleOrDefaultAsync(u => u.Email == email && !u.IsDeleted, cancellationToken);
 
         // Kullanıcı yoksa bile BCrypt'i çalıştırıyoruz ki iki durum aynı sürede bitsin.
@@ -175,7 +178,7 @@ public sealed class AuthService : IAuthService
 
         await _db.SaveChangesAsync(cancellationToken);
 
-        return CreateAuthResponse(user, GetRoleNames(user), refreshToken, refreshTokenEntity);
+        return CreateAuthResponse(user, GetRoleNames(user), GetPermissionCodes(user), refreshToken, refreshTokenEntity);
     }
 
     public async Task<AuthResponse> RefreshAsync(
@@ -224,6 +227,8 @@ public sealed class AuthService : IAuthService
             .Include(u => u.Company)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
             .SingleOrDefaultAsync(u => u.Id == existingToken.UserId && !u.IsDeleted, cancellationToken);
 
         if (user is null || !IsAllowedToSignIn(user))
@@ -255,7 +260,7 @@ public sealed class AuthService : IAuthService
 
         await _db.SaveChangesAsync(cancellationToken);
 
-        return CreateAuthResponse(user, GetRoleNames(user), newRefreshToken, newRefreshTokenEntity);
+        return CreateAuthResponse(user, GetRoleNames(user), GetPermissionCodes(user), newRefreshToken, newRefreshTokenEntity);
     }
 
     public async Task LogoutAsync(
@@ -302,6 +307,12 @@ public sealed class AuthService : IAuthService
                 u.UserRoles
                     .Select(ur => ur.Role.Name)
                     .OrderBy(name => name)
+                    .ToList(),
+                u.UserRoles
+                    .SelectMany(ur => ur.Role.RolePermissions)
+                    .Select(rp => rp.Permission.Code)
+                    .Distinct()
+                    .OrderBy(code => code)
                     .ToList()))
             .SingleOrDefaultAsync(cancellationToken);
 
@@ -317,6 +328,13 @@ public sealed class AuthService : IAuthService
     private static IReadOnlyCollection<string> GetRoleNames(User user) => user.UserRoles
         .Select(ur => ur.Role.Name)
         .OrderBy(name => name)
+        .ToArray();
+
+    private static IReadOnlyCollection<string> GetPermissionCodes(User user) => user.UserRoles
+        .SelectMany(ur => ur.Role.RolePermissions)
+        .Select(rp => rp.Permission.Code)
+        .Distinct(StringComparer.Ordinal)
+        .Order(StringComparer.Ordinal)
         .ToArray();
 
     private string GetDummyPasswordHash() =>
@@ -410,6 +428,7 @@ public sealed class AuthService : IAuthService
     private AuthResponse CreateAuthResponse(
         User user,
         IReadOnlyCollection<string> roleNames,
+        IReadOnlyCollection<string> permissionCodes,
         string refreshToken,
         RefreshToken refreshTokenEntity)
     {
@@ -420,10 +439,13 @@ public sealed class AuthService : IAuthService
             accessToken.ExpiresAt,
             refreshToken,
             refreshTokenEntity.ExpiresAt,
-            ToDto(user, roleNames));
+            ToDto(user, roleNames, permissionCodes));
     }
 
-    private static AuthUserDto ToDto(User user, IReadOnlyCollection<string> roles) => new(
+    private static AuthUserDto ToDto(
+        User user,
+        IReadOnlyCollection<string> roles,
+        IReadOnlyCollection<string> permissions) => new(
         user.Id,
         user.CompanyId,
         user.Company.Name,
@@ -431,5 +453,6 @@ public sealed class AuthService : IAuthService
         user.IsEmailVerified,
         user.FirstName,
         user.LastName,
-        roles);
+        roles,
+        permissions);
 }

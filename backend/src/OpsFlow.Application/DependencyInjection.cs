@@ -1,6 +1,7 @@
 using System.Globalization;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using OpsFlow.Application.Common.Security;
 using OpsFlow.Application.Features.Auth;
 using OpsFlow.Application.Features.Auth.Emails;
 using OpsFlow.Application.Features.Auth.Tokens;
@@ -14,6 +15,9 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         ValidatorOptions.Global.LanguageManager.Culture = CultureInfo.GetCultureInfo("en");
+
+        services.AddScoped<ICurrentUserPermissions, CurrentUserPermissions>();
+        services.AddScoped<PrivilegeGuard>();
 
         services.AddSingleton<AccountEmailComposer>();
         services.AddScoped<UserTokenManager>();

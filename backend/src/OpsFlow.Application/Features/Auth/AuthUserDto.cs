@@ -8,4 +8,5 @@ public sealed record AuthUserDto(
     bool IsEmailVerified,
     string FirstName,
     string LastName,
-    IReadOnlyCollection<string> Roles);
+    IReadOnlyCollection<string> Roles,
+    IReadOnlyCollection<string> Permissions);

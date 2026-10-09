@@ -11,6 +11,7 @@ public static class ErrorCodes
     public const string BusinessRuleViolation = "business_rule_violation";
     public const string TooManyRequests = "too_many_requests";
     public const string InternalError = "internal_error";
+    public const string InsufficientPrivileges = "insufficient_privileges";
 
     public static class Auth
     {
