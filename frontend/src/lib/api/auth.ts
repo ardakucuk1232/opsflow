@@ -1,6 +1,6 @@
 import { api } from "@/lib/api/client";
 import { send } from "@/lib/api/http";
-import type { AuthResponse, AuthUser } from "@/types/api";
+import type { AuthResponse, AuthUser, InvitationPreview } from "@/types/api";
 
 export type LoginInput = {
   email: string;
@@ -18,6 +18,11 @@ export type RegisterInput = {
 export type ResetPasswordInput = {
   token: string;
   newPassword: string;
+};
+
+export type AcceptInvitationInput = {
+  token: string;
+  password: string;
 };
 
 export const authApi = {
@@ -47,5 +52,17 @@ export const authApi = {
 
   resetPassword(input: ResetPasswordInput): Promise<void> {
     return send<void>("/api/auth/reset-password", { method: "POST", body: input });
+  },
+
+  previewInvitation(token: string, signal?: AbortSignal): Promise<InvitationPreview> {
+    return send<InvitationPreview>("/api/auth/invitations/preview", {
+      method: "POST",
+      body: { token },
+      signal,
+    });
+  },
+
+  acceptInvitation(input: AcceptInvitationInput): Promise<AuthResponse> {
+    return send<AuthResponse>("/api/auth/invitations/accept", { method: "POST", body: input });
   },
 };
