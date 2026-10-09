@@ -115,7 +115,8 @@ public sealed class AuthService : IAuthService
             Email = email,
             PasswordHash = _passwordHasher.Hash(request.Password),
             FirstName = request.FirstName.Trim(),
-            LastName = request.LastName.Trim()
+            LastName = request.LastName.Trim(),
+            LastLoginAt = now
         };
 
         user.UserRoles.Add(new UserRole

@@ -44,6 +44,17 @@ public class UserEndpointsTests
     }
 
     [Fact]
+    public async Task Get_AfterRegistration_ShowsWhenTheAdminLastSignedIn()
+    {
+        var admin = await _team.RegisterAdminAsync();
+
+        var user = await _team.GetAsync<UserSummaryDto>(admin, $"/api/users/{admin.Id}");
+
+        Assert.NotNull(user.LastLoginAt);
+        Assert.False(user.InvitationPending);
+    }
+
+    [Fact]
     public async Task Get_AUserOfAnotherCompany_Returns404()
     {
         var adminA = await _team.RegisterAdminAsync();
