@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using OpsFlow.Api.Extensions;
 using OpsFlow.Api.Handlers;
 using OpsFlow.Api.OpenApi;
@@ -14,7 +15,8 @@ builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfigurati
     .ReadFrom.Services(services)
     .Enrich.FromLogContext());
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
