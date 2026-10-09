@@ -7,6 +7,7 @@ export type AuthUser = {
   firstName: string;
   lastName: string;
   roles: string[];
+  permissions: string[];
 };
 
 export type AuthResponse = {
@@ -25,6 +26,46 @@ export type ProblemDetails = {
   code?: string;
   traceId?: string;
   errors?: Record<string, string[]>;
+};
+
+export type RoleReference = {
+  id: string;
+  name: string;
+};
+
+export type UserSummary = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+  isEmailVerified: boolean;
+  invitationPending: boolean;
+  roles: RoleReference[];
+  lastLoginAt: string | null;
+  createdAt: string;
+};
+
+export type Role = {
+  id: string;
+  name: string;
+  description: string | null;
+  isSystemRole: boolean;
+  permissions: string[];
+  userCount: number;
+};
+
+export type Permission = {
+  code: string;
+  group: string;
+  description: string;
+};
+
+export type InvitationPreview = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  companyName: string;
 };
 
 export type PagedResult<T> = {

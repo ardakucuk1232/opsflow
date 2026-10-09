@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpsFlow.Api.Authorization;
 using OpsFlow.Application.Common.Options;
 using OpsFlow.Application.Common.Security;
 
@@ -45,6 +46,9 @@ public static class AuthenticationExtensions
         services.AddAuthorizationBuilder().SetFallbackPolicy(new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build());
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         return services;
     }

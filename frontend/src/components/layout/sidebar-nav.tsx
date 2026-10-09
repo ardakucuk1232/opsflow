@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAVIGATION } from "@/config/navigation";
+import { getVisibleNavigation } from "@/config/navigation";
+import { useAuth } from "@/lib/auth/auth-provider";
 import { cn } from "@/lib/utils/cn";
 
 function isActive(pathname: string, href: string): boolean {
@@ -11,10 +12,12 @@ function isActive(pathname: string, href: string): boolean {
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const items = getVisibleNavigation(user?.permissions ?? []);
 
   return (
     <nav aria-label="Ana menü" className="flex flex-col gap-1">
-      {NAVIGATION.map(({ href, label, icon: Icon }) => {
+      {items.map(({ href, label, icon: Icon }) => {
         const active = isActive(pathname, href);
 
         return (

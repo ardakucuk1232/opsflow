@@ -49,6 +49,15 @@ public sealed class AccountMailer
         return _composer.PasswordReset(user, token, lifetime);
     }
 
+    public EmailMessage PrepareInvitation(User invitee, User inviter, string companyName, DateTimeOffset now)
+    {
+        var lifetime = TimeSpan.FromDays(_options.InvitationTokenDays);
+        var token = _tokens.Issue(invitee, UserTokenType.Invitation, now, lifetime);
+        var inviterName = $"{inviter.FirstName} {inviter.LastName}".Trim();
+
+        return _composer.Invitation(invitee, inviterName, companyName, token, lifetime);
+    }
+
     public void Send(EmailMessage message)
     {
         if (!_emailQueue.TryEnqueue(message))

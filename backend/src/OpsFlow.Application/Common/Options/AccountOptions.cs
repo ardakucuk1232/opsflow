@@ -8,5 +8,7 @@ public sealed class AccountOptions
 
     public int PasswordResetTokenMinutes { get; init; } = 60;
 
+    public int InvitationTokenDays { get; init; } = 7;
+
     public int EmailCooldownSeconds { get; init; } = 60;
 }

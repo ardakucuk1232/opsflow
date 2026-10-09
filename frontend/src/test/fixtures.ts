@@ -9,6 +9,24 @@ export const TEST_USER: AuthUser = {
   firstName: "Arda",
   lastName: "Küçük",
   roles: ["Admin"],
+  permissions: [
+    "attachment.upload",
+    "audit_log.view",
+    "comment.create",
+    "company.manage",
+    "project.create",
+    "project.manage",
+    "project.view_all",
+    "report.view",
+    "role.manage",
+    "task.assign",
+    "task.create",
+    "task.delete",
+    "task.update",
+    "user.invite",
+    "user.manage",
+    "user.view",
+  ],
 };
 
 export function createAuthResponse(overrides: Partial<AuthResponse> = {}): AuthResponse {

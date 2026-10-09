@@ -9,12 +9,18 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { authApi, type LoginInput, type RegisterInput } from "@/lib/api/auth";
+import {
+  authApi,
+  type AcceptInvitationInput,
+  type LoginInput,
+  type RegisterInput,
+} from "@/lib/api/auth";
 import { session, type SessionState } from "@/lib/auth/session";
 
 type AuthContextValue = SessionState & {
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
+  acceptInvitation: (input: AcceptInvitationInput) => Promise<void>;
   logout: () => Promise<void>;
   retry: () => Promise<void>;
   reloadUser: () => Promise<void>;
@@ -37,6 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session.signIn(await authApi.register(input));
   }, []);
 
+  const acceptInvitation = useCallback(async (input: AcceptInvitationInput) => {
+    const response = await authApi.acceptInvitation(input);
+
+    if (session.getState().status === "authenticated") {
+      await session.signOut();
+    }
+
+    session.signIn(response);
+  }, []);
+
   const logout = useCallback(() => session.signOut(), []);
 
   const retry = useCallback(() => session.bootstrap(), []);
@@ -44,8 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const reloadUser = useCallback(() => session.reloadUser(), []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, login, register, logout, retry, reloadUser }),
-    [state, login, register, logout, retry, reloadUser],
+    () => ({ ...state, login, register, acceptInvitation, logout, retry, reloadUser }),
+    [state, login, register, acceptInvitation, logout, retry, reloadUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

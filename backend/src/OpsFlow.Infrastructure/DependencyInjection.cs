@@ -102,6 +102,7 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(AccountOptions.SectionName))
             .Validate(o => o.EmailVerificationTokenHours > 0, "Account:EmailVerificationTokenHours must be positive.")
             .Validate(o => o.PasswordResetTokenMinutes > 0, "Account:PasswordResetTokenMinutes must be positive.")
+            .Validate(o => o.InvitationTokenDays > 0, "Account:InvitationTokenDays must be positive.")
             .Validate(o => o.EmailCooldownSeconds >= 0, "Account:EmailCooldownSeconds cannot be negative.")
             .ValidateOnStart();
 
