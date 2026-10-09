@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, Mail, ShieldCheck, type LucideIcon } from "lucide-react";
+import { AssignedTasks } from "@/components/dashboard/assigned-tasks";
 import { getRoleLabel } from "@/lib/auth/roles";
 import { useAuth } from "@/lib/auth/auth-provider";
 
@@ -42,12 +43,9 @@ export function DashboardOverview() {
         ))}
       </dl>
 
-      <section className="mt-6 rounded-xl border border-dashed border-border-strong bg-surface px-6 py-12 text-center">
-        <h2 className="text-base font-medium text-foreground">Henüz gösterilecek veri yok</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-          Projeler ve görevler oluşturuldukça özetleri bu panelde görünecek.
-        </p>
-      </section>
+      <div className="mt-6">
+        <AssignedTasks />
+      </div>
     </div>
   );
 }
