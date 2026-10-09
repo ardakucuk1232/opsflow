@@ -31,6 +31,14 @@ public static class ErrorCodes
         public const string InvitationAlreadyAccepted = "users.invitation_already_accepted";
     }
 
+    public static class Projects
+    {
+        public const string KeyTaken = "projects.key_taken";
+        public const string MemberExists = "projects.member_exists";
+        public const string InvalidMember = "projects.invalid_member";
+        public const string LastLead = "projects.last_lead";
+    }
+
     public static class Roles
     {
         public const string SystemRoleLocked = "roles.system_role_locked";
