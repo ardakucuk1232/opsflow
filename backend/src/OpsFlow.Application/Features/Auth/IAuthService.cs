@@ -23,4 +23,13 @@ public interface IAuthService
         CancellationToken cancellationToken);
 
     Task<AuthUserDto> GetCurrentUserAsync(CancellationToken cancellationToken);
+
+    Task<InvitationPreviewDto> PreviewInvitationAsync(
+        InvitationTokenRequest request,
+        CancellationToken cancellationToken);
+
+    Task<AuthResponse> AcceptInvitationAsync(
+        AcceptInvitationRequest request,
+        string? ipAddress,
+        CancellationToken cancellationToken);
 }

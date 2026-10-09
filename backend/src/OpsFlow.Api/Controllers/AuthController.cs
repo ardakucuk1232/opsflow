@@ -154,5 +154,33 @@ public sealed class AuthController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("invitations/preview")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [ProducesResponseType(typeof(InvitationPreviewDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<InvitationPreviewDto>> PreviewInvitation(
+        InvitationTokenRequest request,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await _authService.PreviewInvitationAsync(request, cancellationToken));
+    }
+
+    [HttpPost("invitations/accept")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<AuthResponse>> AcceptInvitation(
+        AcceptInvitationRequest request,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await _authService.AcceptInvitationAsync(request, GetClientIpAddress(), cancellationToken));
+    }
+
     private string? GetClientIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
 }

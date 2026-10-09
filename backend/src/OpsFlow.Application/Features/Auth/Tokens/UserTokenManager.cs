@@ -59,6 +59,22 @@ public sealed class UserTokenManager
                 cancellationToken);
     }
 
+    public Task<UserToken?> FindUsableAsync(
+        string token,
+        UserTokenType type,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var tokenHash = _secureTokenService.HashToken(token);
+
+        return _db.UserTokens
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                t => t.TokenHash == tokenHash && t.Type == type && t.UsedAt == null && t.ExpiresAt > now,
+                cancellationToken);
+    }
+
     public async Task<UserToken?> ConsumeAsync(
         string token,
         UserTokenType type,

@@ -21,4 +21,21 @@ public static class ErrorCodes
         public const string EmailAlreadyInUse = "auth.email_already_in_use";
         public const string InvalidToken = "auth.invalid_token";
     }
+
+    public static class Users
+    {
+        public const string EmailNotVerified = "users.email_not_verified";
+        public const string CannotModifySelf = "users.cannot_modify_self";
+        public const string LastAdmin = "users.last_admin";
+        public const string InvalidRoles = "users.invalid_roles";
+        public const string InvitationAlreadyAccepted = "users.invitation_already_accepted";
+    }
+
+    public static class Roles
+    {
+        public const string SystemRoleLocked = "roles.system_role_locked";
+        public const string InUse = "roles.in_use";
+        public const string NameTaken = "roles.name_taken";
+        public const string InvalidPermissions = "roles.invalid_permissions";
+    }
 }

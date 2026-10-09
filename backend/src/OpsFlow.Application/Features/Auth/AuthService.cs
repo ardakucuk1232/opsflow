@@ -6,8 +6,10 @@ using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Options;
 using OpsFlow.Application.Common.Text;
 using OpsFlow.Application.Features.Auth.Emails;
+using OpsFlow.Application.Features.Auth.Tokens;
 using OpsFlow.Domain.Constants;
 using OpsFlow.Domain.Entities;
+using OpsFlow.Domain.Enums;
 using OpsFlow.Domain.Exceptions;
 
 namespace OpsFlow.Application.Features.Auth;
@@ -16,6 +18,7 @@ public sealed class AuthService : IAuthService
 {
     private const string InvalidCredentialsMessage = "Invalid email or password.";
     private const string InvalidRefreshTokenMessage = "Invalid or expired refresh token.";
+    private const string InvalidInvitationMessage = "The invitation is invalid or has expired.";
 
     // Kullanıcı bulunamadığında BCrypt'i boşuna çalıştırmak için kullanılan hash.
     // static: tüm AuthService örnekleri paylaşır, uygulama ömrü boyunca bir kez üretilir.
@@ -33,6 +36,9 @@ public sealed class AuthService : IAuthService
     private readonly ILogger<AuthService> _logger;
     private readonly ITenantContext _tenantContext;
     private readonly AccountMailer _accountMailer;
+    private readonly UserTokenManager _userTokens;
+    private readonly IValidator<InvitationTokenRequest> _invitationTokenValidator;
+    private readonly IValidator<AcceptInvitationRequest> _acceptInvitationValidator;
 
     public AuthService(
         IOpsFlowDbContext db,
@@ -46,7 +52,10 @@ public sealed class AuthService : IAuthService
         TimeProvider timeProvider,
         ILogger<AuthService> logger,
         ITenantContext tenantContext,
-        AccountMailer accountMailer)
+        AccountMailer accountMailer,
+        UserTokenManager userTokens,
+        IValidator<InvitationTokenRequest> invitationTokenValidator,
+        IValidator<AcceptInvitationRequest> acceptInvitationValidator)
     {
         _db = db;
         _passwordHasher = passwordHasher;
@@ -60,6 +69,9 @@ public sealed class AuthService : IAuthService
         _logger = logger;
         _tenantContext = tenantContext;
         _accountMailer = accountMailer;
+        _userTokens = userTokens;
+        _invitationTokenValidator = invitationTokenValidator;
+        _acceptInvitationValidator = acceptInvitationValidator;
     }
 
     public async Task<AuthResponse> RegisterAsync(
@@ -155,10 +167,11 @@ public sealed class AuthService : IAuthService
             .SingleOrDefaultAsync(u => u.Email == email && !u.IsDeleted, cancellationToken);
 
         // Kullanıcı yoksa bile BCrypt'i çalıştırıyoruz ki iki durum aynı sürede bitsin.
-        var passwordHash = user?.PasswordHash ?? GetDummyPasswordHash();
+        var hasPassword = !string.IsNullOrEmpty(user?.PasswordHash);
+        var passwordHash = hasPassword ? user!.PasswordHash : GetDummyPasswordHash();
         var passwordIsValid = _passwordHasher.Verify(request.Password, passwordHash);
 
-        if (user is null || !passwordIsValid)
+        if (user is null || !hasPassword || !passwordIsValid)
         {
             throw new UnauthorizedException(ErrorCodes.Auth.InvalidCredentials, InvalidCredentialsMessage);
         }
@@ -318,6 +331,72 @@ public sealed class AuthService : IAuthService
 
         return user ?? throw new UnauthorizedException(
             "The user associated with this token is no longer available.");
+    }
+
+    public async Task<InvitationPreviewDto> PreviewInvitationAsync(
+        InvitationTokenRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _invitationTokenValidator.ValidateAndThrowAsync(request, cancellationToken);
+
+        var token = await _userTokens.FindUsableAsync(
+            request.Token, UserTokenType.Invitation, _timeProvider.GetUtcNow(), cancellationToken);
+
+        var user = token is null ? null : await FindInvitedUserAsync(token.UserId, cancellationToken);
+
+        if (user is null)
+        {
+            throw new BusinessRuleException(ErrorCodes.Auth.InvalidToken, InvalidInvitationMessage);
+        }
+
+        return new InvitationPreviewDto(user.Email, user.FirstName, user.LastName, user.Company.Name);
+    }
+
+    public async Task<AuthResponse> AcceptInvitationAsync(
+        AcceptInvitationRequest request,
+        string? ipAddress,
+        CancellationToken cancellationToken)
+    {
+        await _acceptInvitationValidator.ValidateAndThrowAsync(request, cancellationToken);
+
+        var now = _timeProvider.GetUtcNow();
+
+        var token = await _userTokens.ConsumeAsync(
+            request.Token, UserTokenType.Invitation, now, cancellationToken);
+
+        var user = token is null ? null : await FindInvitedUserAsync(token.UserId, cancellationToken);
+
+        if (user is null)
+        {
+            throw new BusinessRuleException(ErrorCodes.Auth.InvalidToken, InvalidInvitationMessage);
+        }
+
+        user.PasswordHash = _passwordHasher.Hash(request.Password);
+        user.IsEmailVerified = true;
+        user.LastLoginAt = now;
+
+        var (refreshToken, refreshTokenEntity) = CreateRefreshToken(user, ipAddress, now);
+        _db.RefreshTokens.Add(refreshTokenEntity);
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return CreateAuthResponse(user, GetRoleNames(user), GetPermissionCodes(user), refreshToken, refreshTokenEntity);
+    }
+
+    private async Task<User?> FindInvitedUserAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await _db.Users
+            .IgnoreQueryFilters()
+            .Include(u => u.Company)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+            .SingleOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
+
+        return user is not null && IsAllowedToSignIn(user) && string.IsNullOrEmpty(user.PasswordHash)
+            ? user
+            : null;
     }
 
     private static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();

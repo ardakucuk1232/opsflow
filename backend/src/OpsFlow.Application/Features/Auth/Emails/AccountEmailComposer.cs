@@ -11,6 +11,7 @@ public sealed class AccountEmailComposer
 {
     public const string VerifyEmailPath = "/verify-email";
     public const string ResetPasswordPath = "/reset-password";
+    public const string AcceptInvitationPath = "/accept-invitation";
 
     private readonly string _baseUrl;
 
@@ -45,6 +46,20 @@ public sealed class AccountEmailComposer
             actionLabel: "Yeni şifre belirle",
             link,
             footer: $"Bağlantı {minutes} dakika boyunca geçerlidir ve yalnızca bir kez kullanılabilir. Bu isteği siz yapmadıysanız bu e-postayı dikkate almayın, şifreniz değişmez.");
+    }
+
+    public EmailMessage Invitation(User invitee, string inviterName, string companyName, string token, TimeSpan validFor)
+    {
+        var link = BuildLink(AcceptInvitationPath, token);
+        var days = ((int)validFor.TotalDays).ToString(CultureInfo.InvariantCulture);
+
+        return Compose(
+            invitee,
+            subject: $"{companyName} sizi OpsFlow'a davet etti",
+            intro: $"{inviterName}, sizi OpsFlow üzerinde {companyName} çalışma alanına davet etti. Daveti kabul etmek ve şifrenizi belirlemek için aşağıdaki bağlantıyı açın.",
+            actionLabel: "Daveti kabul et",
+            link,
+            footer: $"Bağlantı {days} gün boyunca geçerlidir. Bu daveti beklemiyorsanız bu e-postayı dikkate almayın.");
     }
 
     private string BuildLink(string path, string token) =>
