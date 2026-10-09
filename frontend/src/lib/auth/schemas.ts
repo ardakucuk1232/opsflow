@@ -63,7 +63,47 @@ export const resetPasswordSchema = z
   })
   .refine((values) => values.password === values.passwordConfirmation, PASSWORD_MISMATCH);
 
+export const inviteUserSchema = z.object({
+  firstName: z
+    .string()
+    .trim()
+    .min(1, "Ad zorunludur.")
+    .max(100, "Ad en fazla 100 karakter olabilir."),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Soyad zorunludur.")
+    .max(100, "Soyad en fazla 100 karakter olabilir."),
+  email,
+  roleIds: z.array(z.string()).min(1, "En az bir rol seçin."),
+});
+
+export const userRolesSchema = z.object({
+  roleIds: z.array(z.string()).min(1, "En az bir rol seçin."),
+});
+
+export const roleSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Rol adı zorunludur.")
+    .max(100, "Rol adı en fazla 100 karakter olabilir."),
+  description: z.string().trim().max(500, "Açıklama en fazla 500 karakter olabilir."),
+  permissions: z.array(z.string()),
+});
+
+export const acceptInvitationSchema = z
+  .object({
+    password: newPassword,
+    passwordConfirmation,
+  })
+  .refine((values) => values.password === values.passwordConfirmation, PASSWORD_MISMATCH);
+
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+export type InviteUserFormValues = z.infer<typeof inviteUserSchema>;
+export type UserRolesFormValues = z.infer<typeof userRolesSchema>;
+export type RoleFormValues = z.infer<typeof roleSchema>;
+export type AcceptInvitationFormValues = z.infer<typeof acceptInvitationSchema>;
