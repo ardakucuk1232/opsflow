@@ -17,6 +17,16 @@ const MESSAGES_BY_CODE: Record<string, string> = {
   "auth.account_disabled": "Bu hesap devre dışı bırakılmış. Şirket yöneticinizle iletişime geçin.",
   "auth.email_already_in_use": "Bu e-posta adresiyle kayıtlı bir hesap zaten var.",
   "auth.invalid_token": "Bağlantı geçersiz veya süresi dolmuş.",
+  insufficient_privileges: "Sahip olmadığınız izinleri başkasına veremez veya değiştiremezsiniz.",
+  "users.email_not_verified": "Kullanıcı davet etmeden önce e-posta adresinizi doğrulayın.",
+  "users.cannot_modify_self": "Kendi rolünüzü veya hesap durumunuzu değiştiremezsiniz.",
+  "users.last_admin": "Şirkette en az bir aktif Admin kalmalıdır.",
+  "users.invalid_roles": "Seçilen rollerden biri artık mevcut değil. Sayfayı yenileyip tekrar deneyin.",
+  "users.invitation_already_accepted": "Bu kullanıcının bekleyen bir daveti yok.",
+  "roles.system_role_locked": "Sistem rolleri değiştirilemez ve silinemez.",
+  "roles.in_use": "Bu rol kullanıcılara atanmış. Silmeden önce bu kullanıcıların rolünü değiştirin.",
+  "roles.name_taken": "Bu isimde bir rol zaten var.",
+  "roles.invalid_permissions": "Seçilen izinlerden biri geçerli değil.",
 };
 
 function tooManyRequestsMessage(retryAfterSeconds: number | null): string {
