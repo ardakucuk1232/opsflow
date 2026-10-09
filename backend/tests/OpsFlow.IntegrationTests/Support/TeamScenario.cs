@@ -2,8 +2,10 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using OpsFlow.Application.Features.Auth;
+using OpsFlow.Application.Features.Projects;
 using OpsFlow.Application.Features.Roles;
 using OpsFlow.Application.Features.Users;
+using OpsFlow.Domain.Enums;
 using OpsFlow.IntegrationTests.Fixtures;
 
 namespace OpsFlow.IntegrationTests.Support;
@@ -98,6 +100,34 @@ public sealed class TeamScenario
     public async Task AssignRolesAsync(Member actor, Guid userId, params Guid[] roleIds)
     {
         var response = await SendAsync(actor, HttpMethod.Put, $"/api/users/{userId}/roles", new UpdateUserRolesRequest(roleIds));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    public async Task<ProjectDetailDto> CreateProjectAsync(Member actor, string? key = null)
+    {
+        var unique = Guid.NewGuid().ToString("N");
+        var request = new CreateProjectRequest(
+            $"Project {unique[..8]}",
+            key ?? $"P{unique[..6].ToUpperInvariant()}",
+            null,
+            ProjectStatus.Active,
+            null,
+            null);
+
+        var response = await SendAsync(actor, HttpMethod.Post, "/api/projects", request);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var project = await response.Content.ReadFromJsonAsync<ProjectDetailDto>(JsonDefaults.Options);
+        Assert.NotNull(project);
+
+        return project;
+    }
+
+    public async Task AddProjectMemberAsync(Member actor, Guid projectId, Guid userId, ProjectMemberRole role = ProjectMemberRole.Member)
+    {
+        var response = await SendAsync(actor, HttpMethod.Post, $"/api/projects/{projectId}/members", new AddProjectMemberRequest(userId, role));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
