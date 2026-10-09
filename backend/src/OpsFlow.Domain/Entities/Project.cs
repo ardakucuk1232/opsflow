@@ -21,6 +21,8 @@ public class Project : BaseEntity, ITenantEntity, ISoftDeletable
 
     public Guid CreatedByUserId { get; set; }
 
+    public int LastTaskNumber { get; set; }
+
     public bool IsDeleted { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
 
