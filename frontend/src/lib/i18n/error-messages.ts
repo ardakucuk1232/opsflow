@@ -31,6 +31,7 @@ const MESSAGES_BY_CODE: Record<string, string> = {
   "projects.member_exists": "Bu kullanıcı zaten projenin üyesi.",
   "projects.invalid_member": "Bu kullanıcı projeye eklenemez. Hesabı pasif ya da silinmiş olabilir.",
   "projects.last_lead": "Projede en az bir aktif proje lideri kalmalıdır.",
+  "tasks.assignee_not_member": "Görev yalnızca projenin aktif üyelerine atanabilir.",
 };
 
 function tooManyRequestsMessage(retryAfterSeconds: number | null): string {
