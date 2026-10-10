@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -41,6 +43,16 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         BaseAddress = new Uri("https://localhost"),
         AllowAutoRedirect = false
     });
+
+    public HubConnection CreateHubConnection(string accessToken) => new HubConnectionBuilder()
+        .WithUrl(new Uri(Server.BaseAddress, "hubs/notifications"), options =>
+        {
+            options.Transports = HttpTransportType.LongPolling;
+            options.HttpMessageHandlerFactory = _ => Server.CreateHandler();
+            options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
+        })
+        .AddJsonProtocol(options => options.PayloadSerializerOptions = JsonDefaults.Options)
+        .Build();
 
     public async Task ExpireUserTokensAsync(Guid userId)
     {

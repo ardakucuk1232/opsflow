@@ -3,6 +3,7 @@ using OpsFlow.Api.Extensions;
 using OpsFlow.Api.Handlers;
 using OpsFlow.Api.OpenApi;
 using OpsFlow.Api.Middleware;
+using OpsFlow.Api.Realtime;
 using OpsFlow.Application;
 using OpsFlow.Infrastructure;
 using OpsFlow.Infrastructure.Persistence;
@@ -32,6 +33,8 @@ builder.Services.AddJwtAuthentication();
 builder.Services.AddApiRateLimiting(builder.Configuration);
 
 builder.Services.AddApiCors(builder.Configuration);
+
+builder.Services.AddRealtime();
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<OpsFlowDbContext>(name: "postgres");
@@ -64,6 +67,7 @@ app.UseMiddleware<TenantMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationsHub>(NotificationsHub.Path);
 app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();
