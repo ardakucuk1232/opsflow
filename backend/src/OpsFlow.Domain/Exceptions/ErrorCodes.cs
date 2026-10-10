@@ -44,6 +44,13 @@ public static class ErrorCodes
         public const string AssigneeNotMember = "tasks.assignee_not_member";
     }
 
+    public static class Attachments
+    {
+        public const string FileTypeNotAllowed = "attachments.file_type_not_allowed";
+        public const string FileTooLarge = "attachments.file_too_large";
+        public const string ContentMismatch = "attachments.content_mismatch";
+    }
+
     public static class Roles
     {
         public const string SystemRoleLocked = "roles.system_role_locked";

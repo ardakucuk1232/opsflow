@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Pagination;
+using OpsFlow.Application.Features.Notifications;
 using OpsFlow.Domain.Entities;
 using OpsFlow.Domain.Enums;
 using OpsFlow.Domain.Exceptions;
@@ -12,6 +13,7 @@ public sealed class ProjectService : IProjectService
 {
     private readonly IOpsFlowDbContext _db;
     private readonly ProjectAccess _access;
+    private readonly NotificationPublisher _notifications;
     private readonly IValidator<ProjectListQuery> _listValidator;
     private readonly IValidator<CreateProjectRequest> _createValidator;
     private readonly IValidator<UpdateProjectRequest> _updateValidator;
@@ -22,6 +24,7 @@ public sealed class ProjectService : IProjectService
     public ProjectService(
         IOpsFlowDbContext db,
         ProjectAccess access,
+        NotificationPublisher notifications,
         IValidator<ProjectListQuery> listValidator,
         IValidator<CreateProjectRequest> createValidator,
         IValidator<UpdateProjectRequest> updateValidator,
@@ -31,6 +34,7 @@ public sealed class ProjectService : IProjectService
     {
         _db = db;
         _access = access;
+        _notifications = notifications;
         _listValidator = listValidator;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
@@ -240,7 +244,25 @@ public sealed class ProjectService : IProjectService
 
         await _db.SaveChangesAsync(cancellationToken);
 
-        return await GetAsync(id, cancellationToken);
+        var project = await GetAsync(id, cancellationToken);
+        var actorName = await _db.Users
+            .Where(u => u.Id == _access.CurrentUserId)
+            .Select(u => u.FirstName + " " + u.LastName)
+            .SingleAsync(cancellationToken);
+
+        await _notifications.PublishAsync(
+            new NotificationRequest(
+                [request.UserId],
+                _access.CurrentUserId,
+                NotificationType.ProjectMemberAdded,
+                "Projeye eklendiniz",
+                $"{actorName} sizi {project.Key} {project.Name} projesine ekledi.",
+                NotificationLinks.ProjectEntity,
+                project.Id,
+                NotificationLinks.ForProject(project.Id)),
+            cancellationToken);
+
+        return project;
     }
 
     public async Task<ProjectDetailDto> UpdateMemberAsync(

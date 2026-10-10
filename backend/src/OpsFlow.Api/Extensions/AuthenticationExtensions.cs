@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpsFlow.Api.Authorization;
+using OpsFlow.Api.Realtime;
 using OpsFlow.Application.Common.Options;
 using OpsFlow.Application.Common.Security;
 
@@ -40,6 +41,22 @@ public static class AuthenticationExtensions
 
                 NameClaimType = OpsFlowClaimTypes.UserId,
                 RoleClaimType = OpsFlowClaimTypes.Role
+            };
+
+            bearerOptions.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+
+                    if (!string.IsNullOrEmpty(accessToken)
+                        && context.HttpContext.Request.Path.StartsWithSegments(NotificationsHub.Path))
+                    {
+                        context.Token = accessToken;
+                    }
+
+                    return Task.CompletedTask;
+                }
             };
         });
 

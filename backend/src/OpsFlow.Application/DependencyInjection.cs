@@ -2,9 +2,11 @@ using System.Globalization;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using OpsFlow.Application.Common.Security;
+using OpsFlow.Application.Features.Attachments;
 using OpsFlow.Application.Features.Auth;
 using OpsFlow.Application.Features.Auth.Emails;
 using OpsFlow.Application.Features.Auth.Tokens;
+using OpsFlow.Application.Features.Notifications;
 using OpsFlow.Application.Features.Projects;
 using OpsFlow.Application.Features.Roles;
 using OpsFlow.Application.Features.Tasks;
@@ -33,8 +35,12 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<ProjectAccess>();
         services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<NotificationPublisher>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<TaskActivity>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<ITaskCommentService, TaskCommentService>();
+        services.AddScoped<IAttachmentService, AttachmentService>();
 
         return services;
     }

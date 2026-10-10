@@ -18,6 +18,7 @@ public sealed class TaskService : ITaskService
     private readonly ProjectAccess _access;
     private readonly ICurrentUserPermissions _permissions;
     private readonly ITaskNumberGenerator _numbers;
+    private readonly TaskActivity _activity;
     private readonly IValidator<CreateTaskRequest> _createValidator;
     private readonly IValidator<UpdateTaskRequest> _updateValidator;
     private readonly IValidator<MoveTaskRequest> _moveValidator;
@@ -28,6 +29,7 @@ public sealed class TaskService : ITaskService
         ProjectAccess access,
         ICurrentUserPermissions permissions,
         ITaskNumberGenerator numbers,
+        TaskActivity activity,
         IValidator<CreateTaskRequest> createValidator,
         IValidator<UpdateTaskRequest> updateValidator,
         IValidator<MoveTaskRequest> moveValidator,
@@ -37,6 +39,7 @@ public sealed class TaskService : ITaskService
         _access = access;
         _permissions = permissions;
         _numbers = numbers;
+        _activity = activity;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _moveValidator = moveValidator;
@@ -214,6 +217,13 @@ public sealed class TaskService : ITaskService
 
         await _db.SaveChangesAsync(cancellationToken);
 
+        if (task.AssigneeId is not null)
+        {
+            await _activity.AssignedAsync(task.Id, cancellationToken);
+        }
+
+        await _activity.ChangedAsync(projectId, task.Id, cancellationToken);
+
         return await GetAsync(task.Id, cancellationToken);
     }
 
@@ -229,6 +239,7 @@ public sealed class TaskService : ITaskService
         task.DueDate = TaskDates.ToStored(request.DueDate);
 
         await _db.SaveChangesAsync(cancellationToken);
+        await _activity.ChangedAsync(task.ProjectId, task.Id, cancellationToken);
 
         return await GetAsync(id, cancellationToken);
     }
@@ -242,9 +253,18 @@ public sealed class TaskService : ITaskService
             await EnsureProjectMemberAsync(task.ProjectId, assigneeId, cancellationToken);
         }
 
+        var assigneeChanged = task.AssigneeId != request.AssigneeId;
+
         task.AssigneeId = request.AssigneeId;
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        if (assigneeChanged && request.AssigneeId is not null)
+        {
+            await _activity.AssignedAsync(task.Id, cancellationToken);
+        }
+
+        await _activity.ChangedAsync(task.ProjectId, task.Id, cancellationToken);
 
         return await GetAsync(id, cancellationToken);
     }
@@ -268,13 +288,22 @@ public sealed class TaskService : ITaskService
             column[index].BoardOrder = index;
         }
 
-        if (task.Status != request.Status)
+        var statusChanged = task.Status != request.Status;
+
+        if (statusChanged)
         {
             task.Status = request.Status;
             task.CompletedAt = request.Status == TaskItemStatus.Done ? _timeProvider.GetUtcNow() : null;
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        if (statusChanged)
+        {
+            await _activity.StatusChangedAsync(task.Id, request.Status, cancellationToken);
+        }
+
+        await _activity.ChangedAsync(task.ProjectId, task.Id, cancellationToken);
 
         return await GetAsync(id, cancellationToken);
     }
@@ -287,6 +316,7 @@ public sealed class TaskService : ITaskService
         task.DeletedAt = _timeProvider.GetUtcNow();
 
         await _db.SaveChangesAsync(cancellationToken);
+        await _activity.ChangedAsync(task.ProjectId, task.Id, cancellationToken);
     }
 
     private async Task<TaskItem> LoadVisibleTaskAsync(Guid id, CancellationToken cancellationToken)

@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { env } from "./src/config/env";
 
 const isDevelopment = process.env.NODE_ENV === "development";
+const realtimeUrl = env.apiUrl.replace(/^http/, "ws");
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -9,7 +10,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  `connect-src 'self' ${env.apiUrl}${isDevelopment ? " ws:" : ""}`,
+  `connect-src 'self' ${env.apiUrl} ${realtimeUrl}${isDevelopment ? " ws:" : ""}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

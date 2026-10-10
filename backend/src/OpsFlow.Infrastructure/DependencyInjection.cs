@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Options;
 using OpsFlow.Infrastructure.Email;
+using OpsFlow.Infrastructure.Storage;
 using OpsFlow.Infrastructure.Identity;
 using OpsFlow.Infrastructure.Persistence;
 using OpsFlow.Infrastructure.Persistence.Interceptors;
@@ -26,6 +27,7 @@ public static class DependencyInjection
         AddPersistence(services, configuration);
         AddIdentityServices(services, configuration);
         AddEmail(services, configuration);
+        AddStorage(services, configuration);
 
         return services;
     }
@@ -111,5 +113,16 @@ public static class DependencyInjection
         services.AddSingleton<IEmailQueue>(sp => sp.GetRequiredService<EmailQueue>());
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<EmailDispatchService>();
+    }
+
+    private static void AddStorage(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<StorageOptions>()
+            .Bind(configuration.GetSection(StorageOptions.SectionName))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.RootPath), "Storage:RootPath is required.")
+            .Validate(o => o.MaxFileSizeBytes > 0, "Storage:MaxFileSizeBytes must be positive.")
+            .ValidateOnStart();
+
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
     }
 }

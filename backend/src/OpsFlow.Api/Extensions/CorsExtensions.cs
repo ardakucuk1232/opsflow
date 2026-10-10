@@ -30,7 +30,11 @@ public static class CorsExtensions
                 policy
                     .WithOrigins(origins)
                     .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
-                    .WithHeaders(HeaderNames.Authorization, HeaderNames.ContentType)
+                    .WithHeaders(
+                        HeaderNames.Authorization,
+                        HeaderNames.ContentType,
+                        HeaderNames.XRequestedWith,
+                        "X-SignalR-User-Agent")
                     .WithExposedHeaders(HeaderNames.RetryAfter)
                     .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
             });

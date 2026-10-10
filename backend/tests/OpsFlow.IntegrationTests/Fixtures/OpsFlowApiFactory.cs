@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,12 +19,15 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string AllowedOrigin = "http://localhost:3000";
     public const string FrontendBaseUrl = "http://localhost:3000";
+    public const int MaxFileSizeBytes = 64 * 1024;
 
     private readonly PostgresFixture _postgres = new();
 
     private readonly string _signingKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
     public CapturingEmailQueue Emails { get; } = new();
+
+    public string StorageRoot { get; } = Path.Combine(Path.GetTempPath(), "opsflow-tests", Guid.NewGuid().ToString("N"));
 
     protected virtual int AuthPermitLimit => 10_000;
 
@@ -34,6 +39,11 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         await base.DisposeAsync();
         await _postgres.DisposeAsync();
+
+        if (Directory.Exists(StorageRoot))
+        {
+            Directory.Delete(StorageRoot, recursive: true);
+        }
     }
 
     public HttpClient CreateApiClient() => CreateClient(new WebApplicationFactoryClientOptions
@@ -41,6 +51,16 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         BaseAddress = new Uri("https://localhost"),
         AllowAutoRedirect = false
     });
+
+    public HubConnection CreateHubConnection(string accessToken) => new HubConnectionBuilder()
+        .WithUrl(new Uri(Server.BaseAddress, "hubs/notifications"), options =>
+        {
+            options.Transports = HttpTransportType.LongPolling;
+            options.HttpMessageHandlerFactory = _ => Server.CreateHandler();
+            options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
+        })
+        .AddJsonProtocol(options => options.PayloadSerializerOptions = JsonDefaults.Options)
+        .Build();
 
     public async Task ExpireUserTokensAsync(Guid userId)
     {
@@ -93,7 +113,9 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["Email:Port"] = "2525",
                 ["Email:Security"] = "None",
                 ["Email:FromAddress"] = "no-reply@opsflow.test",
-                ["Frontend:BaseUrl"] = FrontendBaseUrl
+                ["Frontend:BaseUrl"] = FrontendBaseUrl,
+                ["Storage:RootPath"] = StorageRoot,
+                ["Storage:MaxFileSizeBytes"] = MaxFileSizeBytes.ToString(CultureInfo.InvariantCulture)
             }));
 
         return base.CreateHost(builder);

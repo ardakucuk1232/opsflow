@@ -32,6 +32,9 @@ const MESSAGES_BY_CODE: Record<string, string> = {
   "projects.invalid_member": "Bu kullanıcı projeye eklenemez. Hesabı pasif ya da silinmiş olabilir.",
   "projects.last_lead": "Projede en az bir aktif proje lideri kalmalıdır.",
   "tasks.assignee_not_member": "Görev yalnızca projenin aktif üyelerine atanabilir.",
+  "attachments.file_type_not_allowed": "Bu dosya türü yüklenemez. PDF, görsel, metin, Office belgesi veya ZIP dosyası seçin.",
+  "attachments.file_too_large": "Dosya 10 MB'tan büyük olamaz.",
+  "attachments.content_mismatch": "Dosyanın içeriği uzantısıyla uyuşmuyor.",
 };
 
 function tooManyRequestsMessage(retryAfterSeconds: number | null): string {

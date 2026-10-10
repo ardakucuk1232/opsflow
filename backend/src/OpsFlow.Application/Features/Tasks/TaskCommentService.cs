@@ -15,6 +15,7 @@ public sealed class TaskCommentService : ITaskCommentService
     private readonly ProjectAccess _access;
     private readonly ICurrentUserPermissions _permissions;
     private readonly IValidator<AddTaskCommentRequest> _validator;
+    private readonly TaskActivity _activity;
     private readonly TimeProvider _timeProvider;
 
     public TaskCommentService(
@@ -22,12 +23,14 @@ public sealed class TaskCommentService : ITaskCommentService
         ProjectAccess access,
         ICurrentUserPermissions permissions,
         IValidator<AddTaskCommentRequest> validator,
+        TaskActivity activity,
         TimeProvider timeProvider)
     {
         _db = db;
         _access = access;
         _permissions = permissions;
         _validator = validator;
+        _activity = activity;
         _timeProvider = timeProvider;
     }
 
@@ -67,6 +70,9 @@ public sealed class TaskCommentService : ITaskCommentService
 
         await _db.SaveChangesAsync(cancellationToken);
 
+        await _activity.CommentAddedAsync(taskId, cancellationToken);
+        await _activity.ChangedAsync(await ProjectOfAsync(taskId, cancellationToken), taskId, cancellationToken);
+
         var comments = await ListAsync(taskId, cancellationToken);
 
         return comments.Single(c => c.Id == comment.Id);
@@ -91,7 +97,11 @@ public sealed class TaskCommentService : ITaskCommentService
         comment.DeletedAt = _timeProvider.GetUtcNow();
 
         await _db.SaveChangesAsync(cancellationToken);
+        await _activity.ChangedAsync(await ProjectOfAsync(taskId, cancellationToken), taskId, cancellationToken);
     }
+
+    private Task<Guid> ProjectOfAsync(Guid taskId, CancellationToken cancellationToken) =>
+        _db.TaskItems.Where(t => t.Id == taskId).Select(t => t.ProjectId).SingleAsync(cancellationToken);
 
     private async Task EnsureTaskVisibleAsync(Guid taskId, CancellationToken cancellationToken)
     {
