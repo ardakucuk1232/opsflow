@@ -185,3 +185,26 @@ export type PagedResult<T> = {
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 };
+
+export type NotificationType =
+  | "TaskAssigned"
+  | "TaskStatusChanged"
+  | "TaskCommentAdded"
+  | "TaskDueSoon"
+  | "ProjectMemberAdded"
+  | "MentionedInComment";
+
+export type AppNotification = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  link: string | null;
+};
+
+export type NotificationList = {
+  items: AppNotification[];
+  unreadCount: number;
+};
