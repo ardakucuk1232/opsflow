@@ -2,6 +2,7 @@ using System.Globalization;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using OpsFlow.Application.Common.Security;
+using OpsFlow.Application.Features.Attachments;
 using OpsFlow.Application.Features.Auth;
 using OpsFlow.Application.Features.Auth.Emails;
 using OpsFlow.Application.Features.Auth.Tokens;
@@ -39,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<TaskActivity>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<ITaskCommentService, TaskCommentService>();
+        services.AddScoped<IAttachmentService, AttachmentService>();
 
         return services;
     }

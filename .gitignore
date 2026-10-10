@@ -18,6 +18,8 @@ coverage/
 *.coverage
 *.trx
 
+App_Data/
+
 #EF Core migration bundle
 efbundle
 efbundle.exe
