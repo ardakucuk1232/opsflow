@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/api/tasks", () => ({ tasksApi: mocks }));
+vi.mock("@/lib/api/attachments", () => ({ attachmentsApi: { list: vi.fn().mockResolvedValue([]) } }));
 vi.mock("@/lib/auth/auth-provider", () => ({ useAuth: () => ({ user: mocks.user }) }));
 
 beforeEach(() => {

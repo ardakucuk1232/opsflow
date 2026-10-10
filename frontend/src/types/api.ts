@@ -208,3 +208,13 @@ export type NotificationList = {
   items: AppNotification[];
   unreadCount: number;
 };
+
+export type TaskAttachment = {
+  id: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  uploadedBy: UserReference;
+  createdAt: string;
+  canDelete: boolean;
+};

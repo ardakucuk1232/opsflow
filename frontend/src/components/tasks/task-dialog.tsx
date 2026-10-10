@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
+import { TaskAttachments } from "@/components/tasks/task-attachments";
 import { TaskComments } from "@/components/tasks/task-comments";
 import { TaskPriorityBadge, TaskStatusBadge } from "@/components/tasks/task-badges";
 import { Alert } from "@/components/ui/alert";
@@ -194,6 +195,8 @@ function TaskDetails({
           <dd className="text-foreground">{data.completedAt ? formatDate(data.completedAt) : "—"}</dd>
         </div>
       </dl>
+
+      <TaskAttachments taskId={data.id} onChanged={onChanged} />
 
       <TaskComments taskId={data.id} onChanged={onChanged} />
 

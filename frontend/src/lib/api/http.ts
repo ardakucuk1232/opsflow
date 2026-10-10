@@ -8,12 +8,14 @@ export type SendOptions = {
   body?: unknown;
   token?: string | null;
   signal?: AbortSignal;
+  responseType?: "json" | "blob";
 };
 
 export async function send<T>(path: string, options: SendOptions = {}): Promise<T> {
-  const headers = new Headers({ Accept: "application/json" });
+  const isForm = options.body instanceof FormData;
+  const headers = new Headers({ Accept: options.responseType === "blob" ? "*/*" : "application/json" });
 
-  if (options.body !== undefined) {
+  if (options.body !== undefined && !isForm) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -27,7 +29,7 @@ export async function send<T>(path: string, options: SendOptions = {}): Promise<
     response = await fetch(`${env.apiUrl}${path}`, {
       method: options.method ?? "GET",
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: serializeBody(options.body, isForm),
       signal: options.signal,
     });
   } catch (error) {
@@ -46,5 +48,17 @@ export async function send<T>(path: string, options: SendOptions = {}): Promise<
     return undefined as T;
   }
 
+  if (options.responseType === "blob") {
+    return (await response.blob()) as T;
+  }
+
   return (await response.json()) as T;
+}
+
+function serializeBody(body: unknown, isForm: boolean): BodyInit | undefined {
+  if (body === undefined) {
+    return undefined;
+  }
+
+  return isForm ? (body as FormData) : JSON.stringify(body);
 }
