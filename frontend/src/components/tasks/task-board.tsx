@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth/auth-provider";
 import { hasPermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { useApiData } from "@/lib/hooks/use-api-data";
 import { getErrorMessage } from "@/lib/i18n/error-messages";
+import { useProjectChanges } from "@/lib/realtime/realtime-provider";
 import { BOARD_STATUSES, getTaskStatusLabel } from "@/lib/i18n/tasks";
 import { columnOf, moveTask, todayIso } from "@/lib/tasks/board";
 import { cn } from "@/lib/utils/cn";
@@ -42,6 +43,8 @@ export function TaskBoard({ project, refreshKey, onOpenTask, onChanged }: TaskBo
     [project.id, refreshKey],
   );
   const board = useApiData(loadTasks);
+
+  useProjectChanges(project.id, board.reload);
 
   const [optimistic, setOptimistic] = useState<Optimistic | null>(null);
   const [search, setSearch] = useState("");
