@@ -1,8 +1,12 @@
+using OpsFlow.Application.Common.Pagination;
+
 namespace OpsFlow.Application.Features.Tasks;
 
 public interface ITaskService
 {
     Task<IReadOnlyList<TaskSummaryDto>> ListForProjectAsync(Guid projectId, CancellationToken cancellationToken);
+
+    Task<PagedResult<TaskListItemDto>> ListAsync(TaskListQuery query, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<AssignedTaskDto>> ListAssignedToMeAsync(CancellationToken cancellationToken);
 

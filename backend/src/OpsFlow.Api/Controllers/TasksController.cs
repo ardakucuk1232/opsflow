@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OpsFlow.Api.Authorization;
+using OpsFlow.Application.Common.Pagination;
 using OpsFlow.Application.Features.Tasks;
 using OpsFlow.Domain.Constants;
 
@@ -16,6 +17,16 @@ public sealed class TasksController : ControllerBase
     {
         _taskService = taskService;
         _commentService = commentService;
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<TaskListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResult<TaskListItemDto>>> List(
+        [FromQuery] TaskListQuery query,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await _taskService.ListAsync(query, cancellationToken));
     }
 
     [HttpGet("assigned-to-me")]
