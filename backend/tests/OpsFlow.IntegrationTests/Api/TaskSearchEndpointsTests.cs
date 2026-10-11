@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using OpsFlow.Application.Common.Pagination;
+using OpsFlow.Application.Features.Search;
 using OpsFlow.Application.Features.Tasks;
 using OpsFlow.Domain.Constants;
 using OpsFlow.Domain.Enums;
@@ -136,6 +137,26 @@ public class TaskSearchEndpointsTests
         var response = await _team.SendAsync(admin, HttpMethod.Get, $"/api/tasks?{queryString}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task QuickSearch_FindsProjectsAndTasks_TheUserCanSee()
+    {
+        var admin = await _team.RegisterAdminAsync();
+        var otherAdmin = await _team.RegisterAdminAsync();
+        var project = await _team.CreateProjectAsync(admin, "MKT");
+        var foreign = await _team.CreateProjectAsync(otherAdmin, "MKX");
+        var task = await CreateAsync(admin, project.Id, "Pazarlama planı");
+        await CreateAsync(otherAdmin, foreign.Id, "Pazarlama bütçesi");
+
+        var result = await _team.GetAsync<SearchResultDto>(admin, "/api/search?q=pazarlama");
+        var byKey = await _team.GetAsync<SearchResultDto>(admin, "/api/search?q=mk");
+        var tooShort = await _team.SendAsync(admin, HttpMethod.Get, "/api/search?q=p");
+
+        Assert.Equal(task.Id, Assert.Single(result.Tasks).Id);
+        Assert.Equal("MKT-1", result.Tasks[0].Key);
+        Assert.Equal(project.Id, Assert.Single(byKey.Projects).Id);
+        Assert.Equal(HttpStatusCode.BadRequest, tooShort.StatusCode);
     }
 
     private async Task<TaskDetailDto> CreateAsync(
