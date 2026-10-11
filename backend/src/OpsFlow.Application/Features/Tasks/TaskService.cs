@@ -19,6 +19,7 @@ public sealed class TaskService : ITaskService
     private readonly ICurrentUserPermissions _permissions;
     private readonly ITaskNumberGenerator _numbers;
     private readonly TaskActivity _activity;
+    private readonly BoardCache _boards;
     private readonly IValidator<CreateTaskRequest> _createValidator;
     private readonly IValidator<UpdateTaskRequest> _updateValidator;
     private readonly IValidator<MoveTaskRequest> _moveValidator;
@@ -30,6 +31,7 @@ public sealed class TaskService : ITaskService
         ICurrentUserPermissions permissions,
         ITaskNumberGenerator numbers,
         TaskActivity activity,
+        BoardCache boards,
         IValidator<CreateTaskRequest> createValidator,
         IValidator<UpdateTaskRequest> updateValidator,
         IValidator<MoveTaskRequest> moveValidator,
@@ -40,6 +42,7 @@ public sealed class TaskService : ITaskService
         _permissions = permissions;
         _numbers = numbers;
         _activity = activity;
+        _boards = boards;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _moveValidator = moveValidator;
@@ -50,6 +53,11 @@ public sealed class TaskService : ITaskService
     {
         await _access.EnsureVisibleAsync(projectId, cancellationToken);
 
+        return await _boards.GetOrLoadAsync(projectId, token => LoadBoardAsync(projectId, token), cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<TaskSummaryDto>> LoadBoardAsync(Guid projectId, CancellationToken cancellationToken)
+    {
         var tasks = await _db.TaskItems
             .AsNoTracking()
             .Where(t => t.ProjectId == projectId)

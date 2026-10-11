@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<NotificationPublisher>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<BoardCache>();
         services.AddScoped<TaskActivity>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<ITaskCommentService, TaskCommentService>();

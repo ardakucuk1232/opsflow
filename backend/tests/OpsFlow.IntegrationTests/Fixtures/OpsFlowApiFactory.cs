@@ -33,12 +33,17 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected virtual int SessionPermitLimit => 10_000;
 
-    public Task InitializeAsync() => _postgres.InitializeAsync();
+    protected virtual string? RedisConnectionString => null;
+
+    public virtual Task InitializeAsync() => _postgres.InitializeAsync();
+
+    protected virtual Task DisposeDependenciesAsync() => Task.CompletedTask;
 
     async Task IAsyncLifetime.DisposeAsync()
     {
         await base.DisposeAsync();
         await _postgres.DisposeAsync();
+        await DisposeDependenciesAsync();
 
         if (Directory.Exists(StorageRoot))
         {
@@ -102,6 +107,7 @@ public class OpsFlowApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.ConfigureHostConfiguration(configuration =>
             configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
+                ["ConnectionStrings:Redis"] = RedisConnectionString,
                 ["ConnectionStrings:Postgres"] = _postgres.ConnectionString,
                 ["Jwt:SigningKey"] = _signingKey,
                 ["Cors:AllowedOrigins:0"] = AllowedOrigin,

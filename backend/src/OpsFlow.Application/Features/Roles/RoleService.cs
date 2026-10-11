@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using OpsFlow.Application.Common.Caching;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Security;
 using OpsFlow.Domain.Entities;
@@ -25,17 +26,20 @@ public sealed class RoleService : IRoleService
     private readonly ITenantContext _tenantContext;
     private readonly PrivilegeGuard _privilegeGuard;
     private readonly IValidator<SaveRoleRequest> _validator;
+    private readonly IAppCache _cache;
 
     public RoleService(
         IOpsFlowDbContext db,
         ITenantContext tenantContext,
         PrivilegeGuard privilegeGuard,
-        IValidator<SaveRoleRequest> validator)
+        IValidator<SaveRoleRequest> validator,
+        IAppCache cache)
     {
         _db = db;
         _tenantContext = tenantContext;
         _privilegeGuard = privilegeGuard;
         _validator = validator;
+        _cache = cache;
     }
 
     public async Task<IReadOnlyList<RoleDto>> ListAsync(CancellationToken cancellationToken)
@@ -128,6 +132,13 @@ public sealed class RoleService : IRoleService
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        var holders = await _db.UserRoles
+            .Where(ur => ur.RoleId == role.Id)
+            .Select(ur => ur.UserId)
+            .ToListAsync(cancellationToken);
+
+        await _cache.RemoveAsync(holders.Select(CacheKeys.Permissions).ToList(), cancellationToken);
 
         return await GetAsync(role.Id, cancellationToken);
     }

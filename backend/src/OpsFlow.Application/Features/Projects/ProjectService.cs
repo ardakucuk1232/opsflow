@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Pagination;
 using OpsFlow.Application.Features.Notifications;
+using OpsFlow.Application.Features.Tasks;
 using OpsFlow.Domain.Entities;
 using OpsFlow.Domain.Enums;
 using OpsFlow.Domain.Exceptions;
@@ -14,6 +15,7 @@ public sealed class ProjectService : IProjectService
     private readonly IOpsFlowDbContext _db;
     private readonly ProjectAccess _access;
     private readonly NotificationPublisher _notifications;
+    private readonly BoardCache _boards;
     private readonly IValidator<ProjectListQuery> _listValidator;
     private readonly IValidator<CreateProjectRequest> _createValidator;
     private readonly IValidator<UpdateProjectRequest> _updateValidator;
@@ -30,7 +32,8 @@ public sealed class ProjectService : IProjectService
         IValidator<UpdateProjectRequest> updateValidator,
         IValidator<AddProjectMemberRequest> addMemberValidator,
         IValidator<UpdateProjectMemberRequest> updateMemberValidator,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        BoardCache boards)
     {
         _db = db;
         _access = access;
@@ -41,6 +44,7 @@ public sealed class ProjectService : IProjectService
         _addMemberValidator = addMemberValidator;
         _updateMemberValidator = updateMemberValidator;
         _timeProvider = timeProvider;
+        _boards = boards;
     }
 
     public async Task<PagedResult<ProjectSummaryDto>> ListAsync(ProjectListQuery query, CancellationToken cancellationToken)
@@ -310,6 +314,8 @@ public sealed class ProjectService : IProjectService
                     .SetProperty(t => t.AssigneeId, (Guid?)null)
                     .SetProperty(t => t.UpdatedAt, (DateTimeOffset?)_timeProvider.GetUtcNow()),
                 cancellationToken);
+
+        await _boards.InvalidateAsync(id, cancellationToken);
     }
 
     private async Task<ProjectMember> LoadMemberAsync(Guid projectId, Guid userId, CancellationToken cancellationToken)

@@ -20,16 +20,21 @@ public sealed class TaskActivity
     private readonly IOpsFlowDbContext _db;
     private readonly ITenantContext _tenantContext;
     private readonly NotificationPublisher _publisher;
+    private readonly BoardCache _boards;
 
-    public TaskActivity(IOpsFlowDbContext db, ITenantContext tenantContext, NotificationPublisher publisher)
+    public TaskActivity(IOpsFlowDbContext db, ITenantContext tenantContext, NotificationPublisher publisher, BoardCache boards)
     {
         _db = db;
         _tenantContext = tenantContext;
         _publisher = publisher;
+        _boards = boards;
     }
 
-    public Task ChangedAsync(Guid projectId, Guid taskId, CancellationToken cancellationToken) =>
-        _publisher.TaskChangedAsync(projectId, taskId, cancellationToken);
+    public async Task ChangedAsync(Guid projectId, Guid taskId, CancellationToken cancellationToken)
+    {
+        await _boards.InvalidateAsync(projectId, cancellationToken);
+        await _publisher.TaskChangedAsync(projectId, taskId, cancellationToken);
+    }
 
     public async Task AssignedAsync(Guid taskId, CancellationToken cancellationToken)
     {
