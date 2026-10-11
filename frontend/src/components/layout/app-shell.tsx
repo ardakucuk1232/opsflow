@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { EmailVerificationBanner } from "@/components/account/email-verification-banner";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { QuickSearch } from "@/components/layout/quick-search";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { UserMenu } from "@/components/layout/user-menu";
 import { Logo } from "@/components/ui/logo";
@@ -87,7 +88,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               <p className="truncate text-sm font-medium text-foreground">{user.companyName}</p>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <NotificationBell />
+              <QuickSearch />
+            <NotificationBell />
               <UserMenu user={user} onLogout={() => void logout()} />
             </div>
           </header>

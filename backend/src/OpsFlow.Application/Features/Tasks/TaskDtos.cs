@@ -17,6 +17,20 @@ public sealed record TaskSummaryDto(
     int CommentCount,
     DateTimeOffset CreatedAt);
 
+public sealed record TaskListItemDto(
+    Guid Id,
+    Guid ProjectId,
+    string ProjectKey,
+    string ProjectName,
+    string Key,
+    string Title,
+    TaskItemStatus Status,
+    TaskPriority Priority,
+    UserReferenceDto? Assignee,
+    DateOnly? DueDate,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt);
+
 public sealed record TaskDetailDto(
     Guid Id,
     Guid ProjectId,

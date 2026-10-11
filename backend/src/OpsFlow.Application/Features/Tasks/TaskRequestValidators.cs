@@ -39,3 +39,21 @@ public sealed class AddTaskCommentRequestValidator : AbstractValidator<AddTaskCo
         RuleFor(x => x.Body).NotEmpty().MaximumLength(5000);
     }
 }
+
+public sealed class TaskListQueryValidator : AbstractValidator<TaskListQuery>
+{
+    public TaskListQueryValidator()
+    {
+        RuleFor(x => x.Search).MaximumLength(100);
+        RuleForEach(x => x.Status).IsInEnum();
+        RuleForEach(x => x.Priority).IsInEnum();
+        RuleFor(x => x.Sort).IsInEnum();
+        RuleFor(x => x.Unassigned)
+            .Equal(false)
+            .When(x => x.AssigneeId is not null)
+            .WithMessage("Choose either an assignee or unassigned tasks, not both.");
+        RuleFor(x => x.DueTo)
+            .GreaterThanOrEqualTo(x => x.DueFrom)
+            .When(x => x.DueFrom is not null && x.DueTo is not null);
+    }
+}

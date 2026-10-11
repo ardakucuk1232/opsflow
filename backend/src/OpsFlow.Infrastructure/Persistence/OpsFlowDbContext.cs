@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Npgsql;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Persistence;
@@ -47,6 +48,18 @@ public class OpsFlowDbContext : DbContext, IOpsFlowDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        modelBuilder.HasPostgresExtension("pg_trgm");
+
+        modelBuilder
+            .HasDbFunction(typeof(SqlText).GetMethod(nameof(SqlText.Lower), [typeof(string)])!)
+            .HasTranslation(arguments => new SqlFunctionExpression(
+                "lower",
+                arguments,
+                nullable: true,
+                argumentsPropagateNullability: [true],
+                typeof(string),
+                typeMapping: null));
 
         ApplyGlobalFilters(modelBuilder);
 

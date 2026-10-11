@@ -9,6 +9,7 @@ using OpsFlow.Application.Features.Auth.Tokens;
 using OpsFlow.Application.Features.Notifications;
 using OpsFlow.Application.Features.Projects;
 using OpsFlow.Application.Features.Roles;
+using OpsFlow.Application.Features.Search;
 using OpsFlow.Application.Features.Tasks;
 using OpsFlow.Application.Features.Users;
 
@@ -37,10 +38,12 @@ public static class DependencyInjection
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<NotificationPublisher>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<BoardCache>();
         services.AddScoped<TaskActivity>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<ITaskCommentService, TaskCommentService>();
         services.AddScoped<IAttachmentService, AttachmentService>();
+        services.AddScoped<ISearchService, SearchService>();
 
         return services;
     }

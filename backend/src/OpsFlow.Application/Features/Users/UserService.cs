@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using OpsFlow.Application.Common.Caching;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Pagination;
 using OpsFlow.Application.Common.Security;
@@ -39,6 +40,7 @@ public sealed class UserService : IUserService
     private readonly IValidator<InviteUserRequest> _inviteValidator;
     private readonly IValidator<UpdateUserRolesRequest> _updateRolesValidator;
     private readonly TimeProvider _timeProvider;
+    private readonly IAppCache _cache;
 
     public UserService(
         IOpsFlowDbContext db,
@@ -49,7 +51,8 @@ public sealed class UserService : IUserService
         IValidator<UserListQuery> listValidator,
         IValidator<InviteUserRequest> inviteValidator,
         IValidator<UpdateUserRolesRequest> updateRolesValidator,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IAppCache cache)
     {
         _db = db;
         _tenantContext = tenantContext;
@@ -60,6 +63,7 @@ public sealed class UserService : IUserService
         _inviteValidator = inviteValidator;
         _updateRolesValidator = updateRolesValidator;
         _timeProvider = timeProvider;
+        _cache = cache;
     }
 
     public async Task<PagedResult<UserSummaryDto>> ListAsync(UserListQuery query, CancellationToken cancellationToken)
@@ -244,6 +248,7 @@ public sealed class UserService : IUserService
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+        await ForgetPermissionsAsync(user.Id, cancellationToken);
 
         return await GetAsync(user.Id, cancellationToken);
     }
@@ -272,6 +277,7 @@ public sealed class UserService : IUserService
         user.IsActive = false;
 
         await _db.SaveChangesAsync(cancellationToken);
+        await ForgetPermissionsAsync(user.Id, cancellationToken);
 
         await _db.RefreshTokens
             .Where(t => t.UserId == user.Id && t.RevokedAt == null && t.ExpiresAt > now)
@@ -301,7 +307,11 @@ public sealed class UserService : IUserService
         user.IsActive = true;
 
         await _db.SaveChangesAsync(cancellationToken);
+        await ForgetPermissionsAsync(user.Id, cancellationToken);
     }
+
+    private Task ForgetPermissionsAsync(Guid userId, CancellationToken cancellationToken) =>
+        _cache.RemoveAsync([CacheKeys.Permissions(userId)], cancellationToken);
 
     private static bool IsAdminRole(Role role) => role.IsSystemRole && role.Name == SystemRoles.Admin;
 

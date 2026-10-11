@@ -218,3 +218,41 @@ export type TaskAttachment = {
   createdAt: string;
   canDelete: boolean;
 };
+
+export type TaskSort = "Newest" | "Oldest" | "DueDate" | "Priority" | "Updated";
+
+export type TaskListItem = {
+  id: string;
+  projectId: string;
+  projectKey: string;
+  projectName: string;
+  key: string;
+  title: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assignee: UserReference | null;
+  dueDate: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+};
+
+export type ProjectHit = {
+  id: string;
+  key: string;
+  name: string;
+  status: ProjectStatus;
+};
+
+export type TaskHit = {
+  id: string;
+  projectId: string;
+  projectName: string;
+  key: string;
+  title: string;
+  status: TaskStatus;
+};
+
+export type SearchResult = {
+  projects: ProjectHit[];
+  tasks: TaskHit[];
+};

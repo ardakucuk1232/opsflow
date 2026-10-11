@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using OpsFlow.Application.Common.Interfaces;
+using OpsFlow.Application.Common.Pagination;
 using OpsFlow.Application.Common.Security;
 using OpsFlow.Application.Features.Projects;
 using OpsFlow.Domain.Constants;
@@ -19,9 +20,11 @@ public sealed class TaskService : ITaskService
     private readonly ICurrentUserPermissions _permissions;
     private readonly ITaskNumberGenerator _numbers;
     private readonly TaskActivity _activity;
+    private readonly BoardCache _boards;
     private readonly IValidator<CreateTaskRequest> _createValidator;
     private readonly IValidator<UpdateTaskRequest> _updateValidator;
     private readonly IValidator<MoveTaskRequest> _moveValidator;
+    private readonly IValidator<TaskListQuery> _listValidator;
     private readonly TimeProvider _timeProvider;
 
     public TaskService(
@@ -30,9 +33,11 @@ public sealed class TaskService : ITaskService
         ICurrentUserPermissions permissions,
         ITaskNumberGenerator numbers,
         TaskActivity activity,
+        BoardCache boards,
         IValidator<CreateTaskRequest> createValidator,
         IValidator<UpdateTaskRequest> updateValidator,
         IValidator<MoveTaskRequest> moveValidator,
+        IValidator<TaskListQuery> listValidator,
         TimeProvider timeProvider)
     {
         _db = db;
@@ -40,9 +45,11 @@ public sealed class TaskService : ITaskService
         _permissions = permissions;
         _numbers = numbers;
         _activity = activity;
+        _boards = boards;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _moveValidator = moveValidator;
+        _listValidator = listValidator;
         _timeProvider = timeProvider;
     }
 
@@ -50,6 +57,11 @@ public sealed class TaskService : ITaskService
     {
         await _access.EnsureVisibleAsync(projectId, cancellationToken);
 
+        return await _boards.GetOrLoadAsync(projectId, token => LoadBoardAsync(projectId, token), cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<TaskSummaryDto>> LoadBoardAsync(Guid projectId, CancellationToken cancellationToken)
+    {
         var tasks = await _db.TaskItems
             .AsNoTracking()
             .Where(t => t.ProjectId == projectId)
@@ -91,6 +103,100 @@ public sealed class TaskService : ITaskService
                 t.CreatedAt))
             .ToList();
     }
+
+    public async Task<PagedResult<TaskListItemDto>> ListAsync(TaskListQuery query, CancellationToken cancellationToken)
+    {
+        await _listValidator.ValidateAndThrowAsync(query, cancellationToken);
+
+        var projects = await _access.VisibleProjectsAsync(cancellationToken);
+        var tasks = _db.TaskItems.AsNoTracking().Where(t => projects.Any(p => p.Id == t.ProjectId));
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            tasks = tasks.Matching(query.Search);
+        }
+
+        if (query.ProjectId is Guid projectId)
+        {
+            tasks = tasks.Where(t => t.ProjectId == projectId);
+        }
+
+        if (query.Status.Count > 0)
+        {
+            tasks = tasks.Where(t => query.Status.Contains(t.Status));
+        }
+
+        if (query.Priority.Count > 0)
+        {
+            tasks = tasks.Where(t => query.Priority.Contains(t.Priority));
+        }
+
+        if (query.AssigneeId is Guid assigneeId)
+        {
+            tasks = tasks.Where(t => t.AssigneeId == assigneeId);
+        }
+        else if (query.Unassigned)
+        {
+            tasks = tasks.Where(t => t.AssigneeId == null);
+        }
+
+        if (TaskDates.ToStored(query.DueFrom) is DateTimeOffset dueFrom)
+        {
+            tasks = tasks.Where(t => t.DueDate >= dueFrom);
+        }
+
+        if (TaskDates.ToStored(query.DueTo) is DateTimeOffset dueTo)
+        {
+            tasks = tasks.Where(t => t.DueDate <= dueTo);
+        }
+
+        var page = await Sort(tasks, query.Sort)
+            .Select(t => new
+            {
+                t.Id,
+                t.ProjectId,
+                ProjectKey = t.Project.Key,
+                ProjectName = t.Project.Name,
+                t.Number,
+                t.Title,
+                t.Status,
+                t.Priority,
+                Assignee = t.Assignee == null
+                    ? null
+                    : new UserReferenceDto(t.Assignee.Id, t.Assignee.FirstName, t.Assignee.LastName, t.Assignee.Email),
+                t.DueDate,
+                t.CreatedAt,
+                t.UpdatedAt
+            })
+            .ToPagedResultAsync(query, cancellationToken);
+
+        var items = page.Items
+            .Select(t => new TaskListItemDto(
+                t.Id,
+                t.ProjectId,
+                t.ProjectKey,
+                t.ProjectName,
+                $"{t.ProjectKey}-{t.Number}",
+                t.Title,
+                t.Status,
+                t.Priority,
+                t.Assignee,
+                TaskDates.FromStored(t.DueDate),
+                t.CreatedAt,
+                t.UpdatedAt))
+            .ToList();
+
+        return new PagedResult<TaskListItemDto>(items, page.Page, page.PageSize, page.TotalCount);
+    }
+
+    private static IQueryable<TaskItem> Sort(IQueryable<TaskItem> tasks, TaskSort sort) => sort switch
+    {
+        TaskSort.Oldest => tasks.OrderBy(t => t.CreatedAt).ThenBy(t => t.Id),
+        TaskSort.DueDate => tasks.OrderBy(t => t.DueDate == null).ThenBy(t => t.DueDate).ThenByDescending(t => t.Priority).ThenBy(t => t.Id),
+        TaskSort.Priority => tasks.OrderByDescending(t => t.Priority).ThenBy(t => t.DueDate == null).ThenBy(t => t.DueDate).ThenBy(t => t.Id),
+        TaskSort.Updated => tasks.OrderByDescending(t => t.UpdatedAt ?? t.CreatedAt).ThenBy(t => t.Id),
+        _ => tasks.OrderByDescending(t => t.CreatedAt).ThenBy(t => t.Id)
+    };
 
     public async Task<IReadOnlyList<AssignedTaskDto>> ListAssignedToMeAsync(CancellationToken cancellationToken)
     {
