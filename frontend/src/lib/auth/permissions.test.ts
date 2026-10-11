@@ -24,6 +24,7 @@ describe("getVisibleNavigation", () => {
     expect(getVisibleNavigation(TEST_USER.permissions).map((item) => item.href)).toEqual([
       "/dashboard",
       "/projects",
+      "/tasks",
       "/team",
       "/roles",
     ]);
@@ -33,8 +34,9 @@ describe("getVisibleNavigation", () => {
     expect(getVisibleNavigation(employee.permissions).map((item) => item.href)).toEqual([
       "/dashboard",
       "/projects",
+      "/tasks",
       "/team",
     ]);
-    expect(getVisibleNavigation([]).map((item) => item.href)).toEqual(["/dashboard", "/projects"]);
+    expect(getVisibleNavigation([]).map((item) => item.href)).toEqual(["/dashboard", "/projects", "/tasks"]);
   });
 });

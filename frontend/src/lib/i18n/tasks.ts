@@ -1,4 +1,4 @@
-import type { TaskPriority, TaskStatus } from "@/types/api";
+import type { TaskPriority, TaskSort, TaskStatus } from "@/types/api";
 
 type Tone = "neutral" | "primary" | "success" | "warning" | "danger";
 
@@ -54,4 +54,16 @@ export function getTaskPriorityLabel(priority: TaskPriority): string {
 
 export function getTaskPriorityTone(priority: TaskPriority): Tone {
   return PRIORITY_TONES[priority];
+}
+
+const SORT_LABELS: Record<TaskSort, string> = {
+  Newest: "En yeni",
+  Oldest: "En eski",
+  DueDate: "Bitiş tarihi",
+  Priority: "Öncelik",
+  Updated: "Son güncellenen",
+};
+
+export function getTaskSortLabel(sort: TaskSort): string {
+  return SORT_LABELS[sort];
 }
