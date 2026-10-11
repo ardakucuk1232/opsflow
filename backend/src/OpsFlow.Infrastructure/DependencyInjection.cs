@@ -3,11 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Common.Options;
+using OpsFlow.Infrastructure.Caching;
 using OpsFlow.Infrastructure.Email;
-using OpsFlow.Infrastructure.Storage;
 using OpsFlow.Infrastructure.Identity;
 using OpsFlow.Infrastructure.Persistence;
 using OpsFlow.Infrastructure.Persistence.Interceptors;
+using OpsFlow.Infrastructure.Storage;
 using OpsFlow.Infrastructure.Tenancy;
 
 namespace OpsFlow.Infrastructure;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         AddIdentityServices(services, configuration);
         AddEmail(services, configuration);
         AddStorage(services, configuration);
+        CachingExtensions.AddCaching(services, configuration);
 
         return services;
     }

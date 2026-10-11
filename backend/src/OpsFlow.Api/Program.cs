@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using OpsFlow.Api.Extensions;
 using OpsFlow.Api.Handlers;
+using OpsFlow.Api.HealthChecks;
 using OpsFlow.Api.OpenApi;
 using OpsFlow.Api.Middleware;
 using OpsFlow.Api.Realtime;
@@ -37,7 +38,8 @@ builder.Services.AddApiCors(builder.Configuration);
 builder.Services.AddRealtime();
 
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<OpsFlowDbContext>(name: "postgres");
+    .AddDbContextCheck<OpsFlowDbContext>(name: "postgres")
+    .AddRedisCheck(builder.Configuration);
 
 var app = builder.Build();
 
