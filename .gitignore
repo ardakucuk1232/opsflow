@@ -37,6 +37,8 @@ appsettings.Production.json
 
 node_modules/
 .next/
+playwright-report/
+test-results/
 .turbo/
 next-env.d.ts
 *.tsbuildinfo
