@@ -256,3 +256,37 @@ export type SearchResult = {
   projects: ProjectHit[];
   tasks: TaskHit[];
 };
+
+export type ReportTotals = {
+  activeProjects: number;
+  openTasks: number;
+  overdueTasks: number;
+  unassignedOpenTasks: number;
+  completedLast30Days: number;
+};
+
+export type ReportOverview = {
+  today: string;
+  totals: ReportTotals;
+  byStatus: { status: TaskStatus; count: number }[];
+  openByPriority: { priority: TaskPriority; count: number }[];
+  weekly: { weekStart: string; created: number; completed: number }[];
+  workload: { user: UserReference; open: number; overdue: number }[];
+  projects: {
+    id: string;
+    key: string;
+    name: string;
+    status: ProjectStatus;
+    total: number;
+    done: number;
+    open: number;
+    overdue: number;
+  }[];
+};
+
+export type MySummary = {
+  open: number;
+  overdue: number;
+  dueThisWeek: number;
+  completedLast7Days: number;
+};
