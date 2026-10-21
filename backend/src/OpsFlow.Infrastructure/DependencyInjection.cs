@@ -49,6 +49,7 @@ public static class DependencyInjection
         services.AddSingleton<AuditableEntityInterceptor>();
 
         services.AddScoped<TenantGuardInterceptor>();
+        services.AddScoped<AuditTrailInterceptor>();
 
         services.AddDbContext<OpsFlowDbContext>((serviceProvider, options) =>
         {
@@ -60,7 +61,8 @@ public static class DependencyInjection
 
             options.AddInterceptors(
                 serviceProvider.GetRequiredService<TenantGuardInterceptor>(),
-                serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
+                serviceProvider.GetRequiredService<AuditableEntityInterceptor>(),
+                serviceProvider.GetRequiredService<AuditTrailInterceptor>());
         });
 
         services.AddScoped<IOpsFlowDbContext>(sp => sp.GetRequiredService<OpsFlowDbContext>());

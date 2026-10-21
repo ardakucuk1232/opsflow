@@ -5,6 +5,8 @@ namespace OpsFlow.Domain.Entities;
 
 public class AuditLog : BaseEntity, ITenantEntity
 {
+    public const int EntityLabelMaxLength = 200;
+
     public Guid CompanyId { get; set; }
     public Guid? UserId { get; set; }
 
@@ -13,6 +15,8 @@ public class AuditLog : BaseEntity, ITenantEntity
     public string EntityName { get; set; } = string.Empty;
 
     public string EntityId { get; set; } = string.Empty;
+
+    public string? EntityLabel { get; set; }
 
     public string? OldValues { get; set; }
     public string? NewValues { get; set; }
