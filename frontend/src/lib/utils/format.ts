@@ -20,6 +20,14 @@ export function formatDateTime(value: string): string {
   return dateTimeFormatter.format(new Date(value));
 }
 
+const shortDateFormatter = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short" });
+
+export function formatShortDate(value: string): string {
+  const [year, month, day] = value.split("-").map(Number);
+
+  return shortDateFormatter.format(new Date(year, month - 1, day));
+}
+
 export function formatDateOnly(value: string): string {
   const [year, month, day] = value.split("-").map(Number);
 
