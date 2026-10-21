@@ -10,6 +10,7 @@ using OpsFlow.Application.Features.Auth.Emails;
 using OpsFlow.Application.Features.Auth.Tokens;
 using OpsFlow.Application.Features.Notifications;
 using OpsFlow.Application.Features.Projects;
+using OpsFlow.Application.Features.Reports;
 using OpsFlow.Application.Features.Roles;
 using OpsFlow.Application.Features.Search;
 using OpsFlow.Application.Features.Tasks;
@@ -48,6 +49,7 @@ public static class DependencyInjection
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<AuditWriter>();
+        services.AddScoped<IReportService, ReportService>();
 
         return services;
     }
