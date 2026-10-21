@@ -102,6 +102,10 @@ namespace OpsFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("EntityLabel")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<string>("EntityName")
                         .IsRequired()
                         .HasMaxLength(100)

@@ -2,10 +2,12 @@ using System.Text.Json.Serialization;
 using OpsFlow.Api.Extensions;
 using OpsFlow.Api.Handlers;
 using OpsFlow.Api.HealthChecks;
+using OpsFlow.Api.Http;
 using OpsFlow.Api.OpenApi;
 using OpsFlow.Api.Middleware;
 using OpsFlow.Api.Realtime;
 using OpsFlow.Application;
+using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Infrastructure;
 using OpsFlow.Infrastructure.Persistence;
 using Serilog;
@@ -29,6 +31,8 @@ builder.Services.AddProblemDetails(ProblemDetailsDefaults.Configure);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IRequestContext, HttpRequestContext>();
 builder.Services.AddJwtAuthentication();
 
 builder.Services.AddApiRateLimiting(builder.Configuration);

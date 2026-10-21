@@ -1,8 +1,10 @@
 using System.Globalization;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using OpsFlow.Application.Common.Auditing;
 using OpsFlow.Application.Common.Security;
 using OpsFlow.Application.Features.Attachments;
+using OpsFlow.Application.Features.AuditLogs;
 using OpsFlow.Application.Features.Auth;
 using OpsFlow.Application.Features.Auth.Emails;
 using OpsFlow.Application.Features.Auth.Tokens;
@@ -44,6 +46,8 @@ public static class DependencyInjection
         services.AddScoped<ITaskCommentService, TaskCommentService>();
         services.AddScoped<IAttachmentService, AttachmentService>();
         services.AddScoped<ISearchService, SearchService>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<AuditWriter>();
 
         return services;
     }

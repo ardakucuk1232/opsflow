@@ -1,9 +1,12 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OpsFlow.Application.Common.Auditing;
 using OpsFlow.Application.Common.Interfaces;
 using OpsFlow.Application.Features.Auth.Emails;
 using OpsFlow.Application.Features.Auth.Tokens;
+using OpsFlow.Domain.Constants;
+using OpsFlow.Domain.Entities;
 using OpsFlow.Domain.Enums;
 using OpsFlow.Domain.Exceptions;
 
@@ -23,6 +26,7 @@ public sealed class AccountService : IAccountService
     private readonly IValidator<ResetPasswordRequest> _resetPasswordValidator;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccountService> _logger;
+    private readonly AuditWriter _audit;
 
     public AccountService(
         IOpsFlowDbContext db,
@@ -34,7 +38,8 @@ public sealed class AccountService : IAccountService
         IValidator<ForgotPasswordRequest> forgotPasswordValidator,
         IValidator<ResetPasswordRequest> resetPasswordValidator,
         TimeProvider timeProvider,
-        ILogger<AccountService> logger)
+        ILogger<AccountService> logger,
+        AuditWriter audit)
     {
         _db = db;
         _tenantContext = tenantContext;
@@ -46,6 +51,7 @@ public sealed class AccountService : IAccountService
         _resetPasswordValidator = resetPasswordValidator;
         _timeProvider = timeProvider;
         _logger = logger;
+        _audit = audit;
     }
 
     public async Task VerifyEmailAsync(VerifyEmailRequest request, CancellationToken cancellationToken)
@@ -183,6 +189,17 @@ public sealed class AccountService : IAccountService
         {
             throw new BusinessRuleException(ErrorCodes.Auth.InvalidToken, InvalidTokenMessage);
         }
+
+        var user = await _db.Users
+            .IgnoreQueryFilters()
+            .Where(u => u.Id == token.UserId)
+            .Select(u => new { u.CompanyId, u.Email })
+            .SingleAsync(cancellationToken);
+
+        var masked = new Dictionary<string, object?> { [nameof(User.PasswordHash)] = AuditJson.MaskedValue };
+
+        _audit.Add(user.CompanyId, token.UserId, AuditActions.Updated, nameof(User), token.UserId.ToString(), user.Email, masked, masked);
+        await _db.SaveChangesAsync(cancellationToken);
 
         var revokedSessions = await _db.RefreshTokens
             .IgnoreQueryFilters()
