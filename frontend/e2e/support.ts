@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 
-export const API_URL = process.env.E2E_API_URL ?? "http://localhost:5080";
+export const API_URL = process.env.E2E_API_URL ?? "https://localhost:7080";
 export const PASSWORD = "E2e-guvenli-sifre-1";
 
 export type Account = {
