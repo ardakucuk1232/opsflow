@@ -15,5 +15,17 @@ export default defineConfig({
     include: ["src/**/*.test.{ts,tsx}"],
     restoreMocks: true,
     unstubGlobals: true,
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/**/*.test.{ts,tsx}", "src/test/**", "src/app/**", "src/types/**"],
+      reporter: ["text-summary", "html", "lcov"],
+      thresholds: {
+        statements: 88,
+        branches: 82,
+        functions: 84,
+        lines: 88,
+      },
+    },
   },
 });
