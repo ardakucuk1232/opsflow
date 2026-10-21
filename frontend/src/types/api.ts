@@ -290,3 +290,23 @@ export type MySummary = {
   dueThisWeek: number;
   completedLast7Days: number;
 };
+
+export type AuditAction = "Created" | "Updated" | "Deleted";
+
+export type AuditChange = {
+  field: string;
+  oldValue: unknown;
+  newValue: unknown;
+};
+
+export type AuditLogEntry = {
+  id: string;
+  action: AuditAction;
+  entityName: string;
+  entityId: string;
+  entityLabel: string | null;
+  user: UserReference | null;
+  changes: AuditChange[];
+  ipAddress: string | null;
+  createdAt: string;
+};

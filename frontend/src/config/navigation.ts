@@ -1,6 +1,7 @@
 import {
   BarChart3,
   FolderKanban,
+  History,
   LayoutDashboard,
   ListChecks,
   ShieldCheck,
@@ -23,6 +24,7 @@ export const NAVIGATION: NavigationItem[] = [
   { href: "/team", label: "Ekip", icon: Users, permission: PERMISSIONS.userView },
   { href: "/roles", label: "Roller", icon: ShieldCheck, permission: PERMISSIONS.roleManage },
   { href: "/reports", label: "Raporlar", icon: BarChart3, permission: PERMISSIONS.reportView },
+  { href: "/audit-log", label: "Denetim kaydı", icon: History, permission: PERMISSIONS.auditLogView },
 ];
 
 export function getVisibleNavigation(permissions: readonly string[]): NavigationItem[] {

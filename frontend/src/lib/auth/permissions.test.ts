@@ -28,6 +28,7 @@ describe("getVisibleNavigation", () => {
       "/team",
       "/roles",
       "/reports",
+      "/audit-log",
     ]);
   });
 
