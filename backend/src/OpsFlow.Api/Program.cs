@@ -39,6 +39,8 @@ builder.Services.AddApiRateLimiting(builder.Configuration);
 
 builder.Services.AddApiCors(builder.Configuration);
 
+builder.Services.AddProxySupport(builder.Configuration);
+
 builder.Services.AddRealtime();
 
 builder.Services.AddHealthChecks()
@@ -46,6 +48,14 @@ builder.Services.AddHealthChecks()
     .AddRedisCheck(builder.Configuration);
 
 var app = builder.Build();
+
+if (args.Contains(DatabaseExtensions.MigrateArgument))
+{
+    await app.MigrateDatabaseAsync();
+    return;
+}
+
+app.UseProxySupport();
 
 app.UseSerilogRequestLogging();
 
@@ -62,7 +72,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+if (app.Configuration.GetValue("HttpsRedirection:Enabled", true))
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors();
 
