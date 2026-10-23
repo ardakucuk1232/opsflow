@@ -43,7 +43,7 @@ function AuditRow({ entry }: { entry: AuditLogEntry }) {
         className="grid w-full gap-x-4 gap-y-1 px-4 py-3 text-left transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring md:grid-cols-[9.5rem_minmax(0,1fr)_10rem_1rem] md:items-center"
       >
         <span className="text-xs tabular-nums text-muted">{formatDateTime(entry.createdAt)}</span>
-        <span className="flex min-w-0 flex-wrap items-center gap-2">
+        <span className="flex min-w-0 items-center gap-2">
           <Badge tone={getAuditActionTone(entry.action)}>{getAuditActionLabel(entry.action)}</Badge>
           <span className="text-sm text-muted">{getAuditEntityLabel(entry.entityName)}</span>
           <span className="min-w-0 truncate text-sm font-medium text-foreground">{entry.entityLabel ?? `#${entry.entityId.slice(0, 8)}`}</span>
